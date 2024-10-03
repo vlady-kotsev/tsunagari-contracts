@@ -12,7 +12,6 @@ import {TokenManagerFacet} from "../src/facets/TokenManagerFacet.sol";
 import {WrappedToken} from "../src/WrappedToken.sol";
 
 contract DeployDiamond is Script {
-
     function run() external returns (Diamond) {
         IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](4);
 
@@ -70,11 +69,11 @@ contract DeployDiamond is Script {
         vm.startBroadcast();
         Diamond diamond = new Diamond(cuts);
 
-        // ## Init facets ## 
+        // ## Init facets ##
 
         // Calculator facet
         IDiamond(address(diamond)).initCalculator();
-       
+
         // Governance facet
         address[] memory addresses = readAddressesFromFile("./script/addresses.json", ".addresses");
         uint256 threshold = 1;

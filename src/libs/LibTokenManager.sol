@@ -7,7 +7,7 @@ library LibTokenManager {
     struct Storage {
         bool initialized;
         uint256 minBridgeableAmount;
-        mapping (address => bool) supportedTokens;
+        mapping(address => bool) supportedTokens;
     }
 
     function getTokenManagerStorage() internal pure returns (Storage storage tms) {

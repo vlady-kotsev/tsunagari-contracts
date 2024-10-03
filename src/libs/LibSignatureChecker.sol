@@ -19,11 +19,11 @@ library LibSignatureChecker {
     error LibSignatureChecker__RecoveredAddressNotMember(address);
     error LibSignatureChecker__InvalidSignaturesCount(uint256);
     error LibSignatureChecker__InvalidSignaturesNotUnique();
-    error LibSignatureChecker__InvalidMessageHashAlreadyUsed(); 
+    error LibSignatureChecker__InvalidMessageHashAlreadyUsed();
 
     struct Storage {
         EnumerableSet.Bytes32Set uniqueSet;
-        mapping(bytes32 =>bool) usedMessageHashes;
+        mapping(bytes32 => bool) usedMessageHashes;
     }
 
     function getSignatureCheckerStorage() internal pure returns (Storage storage scs) {
@@ -33,9 +33,9 @@ library LibSignatureChecker {
         }
     }
 
-    function checkIsMessageHashAlreadyUsed (bytes32 messageHash) internal {
+    function checkIsMessageHashAlreadyUsed(bytes32 messageHash) internal {
         Storage storage scs = getSignatureCheckerStorage();
-        if(scs.usedMessageHashes[messageHash]){
+        if (scs.usedMessageHashes[messageHash]) {
             revert LibSignatureChecker__InvalidMessageHashAlreadyUsed();
         }
         scs.usedMessageHashes[messageHash] = true;

@@ -5,7 +5,6 @@ import {LibSignatureChecker} from "../libs/LibSignatureChecker.sol";
 
 contract SignatureChecker {
     modifier enforceIsSignedByAllMembers(bytes32 messageHash, bytes[] memory signatures) {
-
         LibSignatureChecker.checkIsMessageHashAlreadyUsed(messageHash);
 
         LibSignatureChecker.checkSignaturesUniquenessAndCount(signatures);
