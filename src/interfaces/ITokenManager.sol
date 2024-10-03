@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 interface ITokenManager {
-    function initTokenManager(uint256 minBridgeableAmount) external;
+    function initTokenManager(uint256 minBridgeableAmount, address treasuryAddress) external;
     function lockTokens(uint256 amount, address tokenAddress) external;
     function unlockTokens(
         uint256 amount,
@@ -22,4 +22,6 @@ interface ITokenManager {
     function getMinimumBridgeableAmount() external returns (uint256);
     function setMinimumBridgeableAmount(uint256 amount, bytes32 messageHash, bytes[] memory signatures) external;
     function addNewSupportedToken(address tokenAddress, bytes32 messageHash, bytes[] memory signatures) external;
+    function withdrawTokenFunds(address tokenAddress) external;
+    function setTreasuryAddress(address treasuryAddress, bytes32 messageHash, bytes[] memory signatures) external;
 }

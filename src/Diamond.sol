@@ -11,6 +11,8 @@ contract Diamond {
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
     }
 
+    receive() external payable {}
+
     fallback() external payable {
         LibDiamond.DiamondStorage storage ds = LibDiamond.getDiamondStorage();
         address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;

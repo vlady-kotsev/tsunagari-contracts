@@ -8,6 +8,7 @@ library LibTokenManager {
         bool initialized;
         uint256 minBridgeableAmount;
         mapping(address => bool) supportedTokens;
+        address treasuryAddress;
     }
 
     function getTokenManagerStorage() internal pure returns (Storage storage tms) {

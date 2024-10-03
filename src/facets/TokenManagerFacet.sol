@@ -24,14 +24,17 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     error TokenManager__FacetAlreadyInitialized();
     error TokenManager__TokenAlreadyAdded(address);
     error TokenManager__TokenNotSupported(address);
+    error TokenManager__InvalidTreasuryAddress();
 
     event TokensLocked(address indexed user, address indexed tokenAddress, uint256 amount);
     event WrappedTokensMinted(address indexed to, address indexed wrappedTokenAddress, uint256 amount);
     event WrappedTokensBurned(address indexed user, address indexed tokenAddress, uint256 amount);
     event TokensUnlocked(address indexed user, address indexed tokenAddress, uint256 amount);
     event MinBridgeableAmountUpdated(uint256 amount);
+    event TreasuryAddressUpdated();
+    event TokenFundsWithdrawnToTreasury(address);
 
-    function initTokenManager(uint256 minBridgeableAmount) external {
+    function initTokenManager(uint256 minBridgeableAmount, address treasuryAddress) external {
         LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
         if (tms.initialized) {
             revert TokenManager__FacetAlreadyInitialized();
@@ -39,9 +42,13 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         if (minBridgeableAmount == 0) {
             revert TokenManager__InvalidMinBridgeableAmount();
         }
+        if (treasuryAddress == address(0)) {
+            revert TokenManager__InvalidTreasuryAddress();
+        }
 
         tms.initialized = true;
         tms.minBridgeableAmount = minBridgeableAmount;
+        tms.treasuryAddress = treasuryAddress;
     }
 
     function lockTokens(uint256 amount, address tokenAddress) external enforceSupportedToken(tokenAddress) {
@@ -150,6 +157,26 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
             revert TokenManager__TokenAlreadyAdded(tokenAddress);
         }
         tms.supportedTokens[tokenAddress] = true;
+    }
+
+    function setTreasuryAddress(address treasuryAddress, bytes32 messageHash, bytes[] memory signatures)
+        external
+        enforceIsSignedByAllMembers(messageHash, signatures)
+    {
+        if (treasuryAddress == address(0)) {
+            revert TokenManager__InvalidTreasuryAddress();
+        }
+        LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
+        tms.treasuryAddress = treasuryAddress;
+        emit TreasuryAddressUpdated();
+    }
+
+    function withdrawTokenFunds(address tokenAddress) external enforceSupportedToken(tokenAddress) {
+        LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
+        IWrappedToken token = IWrappedToken(tokenAddress);
+        uint256 acumulatedBalance = token.balanceOf(address(this));
+        token.safeTransfer(tms.treasuryAddress, acumulatedBalance);
+        emit TokenFundsWithdrawnToTreasury(tokenAddress);
     }
 
     modifier enforceSupportedToken(address tokenAddress) {
