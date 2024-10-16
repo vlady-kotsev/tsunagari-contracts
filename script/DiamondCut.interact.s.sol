@@ -10,15 +10,14 @@ import {CalculatorFacet} from "../src/facets/CalculatorFacet.sol";
 contract InteractDiamondCut is Script {
     function run() external {
         string memory facetToUpdate = "CalculatorFacet";
-        string memory functionSignature = "newFunc()";
-
         address diamondAddress = DevOpsTools.get_most_recent_deployment("Diamond", block.chainid);
         address facet = DevOpsTools.get_most_recent_deployment(facetToUpdate, block.chainid);
         console.log("Latest facet deployed at ", facet);
+
         IDiamond diamond = IDiamond(diamondAddress);
 
         bytes4[] memory funcSelectors = new bytes4[](1);
-        funcSelectors[0] = bytes4(abi.encodeWithSignature(functionSignature));
+        funcSelectors[0] = CalculatorFacet.calculateFee.selector;
         IDiamondCut.FacetCut memory facetCut =
             IDiamondCut.FacetCut(facet, IDiamondCut.FacetCutAction.Replace, funcSelectors);
         IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](1);

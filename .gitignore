@@ -2,6 +2,10 @@
 cache/
 out/
 
+# Report
+coverage-report/
+lcov.info
+lcov.info.pruned
 # Ignores development broadcast logs
 !/broadcast
 /broadcast/*/31337/
@@ -12,6 +16,7 @@ docs/
 
 # Dotenv file
 .env
+
 .vscode/
 broadcast/
 .notes

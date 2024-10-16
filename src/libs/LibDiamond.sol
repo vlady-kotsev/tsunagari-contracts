@@ -30,12 +30,11 @@ library LibDiamond {
     error LibDiamond__InvalidFunctionSelector();
     error LibDiamond__InvalidFunctionAddress();
     error LibDiamond__FunctionAlreadyAdded();
-    error LibDiamond__InvalidCutAction(uint8);
     error LibDiamond__FunctionDoesntExist();
-    error LibDiamond_InvalidCalldataLengthForAddressZero();
-    error LibDiamond_InvalidCalldataLengthForNotAddressZero();
-    error LibDiamond_InvalidExternalContractSize();
-    error LibDiamond_InitFunctionReverted();
+    error LibDiamond__InvalidCalldataLengthForAddressZero();
+    error LibDiamond__InvalidCalldataLengthForNotAddressZero();
+    error LibDiamond__InvalidExternalContractSize();
+    error LibDiamond__InitFunctionReverted();
 
     function getDiamondStorage() internal pure returns (DiamondStorage storage ds) {
         bytes32 position = STORAGE_SLOT;
@@ -69,8 +68,6 @@ library LibDiamond {
                 removeFunction(functionSelectors[i]);
             } else if (action == IDiamondCut.FacetCutAction.Replace) {
                 replaceFunction(functionSelectors[i], facetAddress);
-            } else {
-                revert LibDiamond__InvalidCutAction(uint8(action));
             }
 
             assembly {
@@ -142,14 +139,14 @@ library LibDiamond {
             uint16 facetPosition = ds.facetFunctionSelectors[facetAddress].facetAddressPosition;
             if (facetPosition != ds.facetAddresses.length - 1) {
                 address temp = ds.facetAddresses[ds.facetAddresses.length - 1];
-                ds.facetAddresses[ds.facetAddresses.length - 1] =
-                    ds.facetAddresses[ds.facetFunctionSelectors[facetAddress].facetAddressPosition];
-                ds.facetAddresses[ds.facetFunctionSelectors[facetAddress].facetAddressPosition] = temp;
+                ds.facetAddresses[ds.facetAddresses.length - 1] = ds.facetAddresses[facetPosition];
+                ds.facetAddresses[facetPosition] = temp;
             }
             ds.facetAddresses.pop();
             delete ds.facetFunctionSelectors[facetAddress];
-        } else {
-            //remove only selector from facet
+        } else if (facetSelectorLength > 1) {
+            // Ensure the facet has more than one selector before removing
+            // remove only selector from facet
             if (functionSelectorPosition == facetSelectorLength - 1) {
                 // it's last
                 ds.facetFunctionSelectors[facetAddress].functionSelectors.pop();
@@ -160,23 +157,22 @@ library LibDiamond {
                     ds.facetFunctionSelectors[facetAddress].functionSelectors[functionSelectorPosition];
                 ds.facetFunctionSelectors[facetAddress].functionSelectors[functionSelectorPosition] = temp;
 
-                //update
+                // update the swapped function's selector position
                 ds.selectorToFacetAndPosition[temp].functionSelectorPosition = functionSelectorPosition;
             }
-            delete ds.selectorToFacetAndPosition[functionSelector];
         }
-
+        delete ds.selectorToFacetAndPosition[functionSelector];
         emit FunctionRemoved(functionSelector);
     }
 
     function initializeDiamondCut(address _init, bytes memory _calldata) internal {
         if (_init == address(0)) {
             if (_calldata.length != 0) {
-                revert LibDiamond_InvalidCalldataLengthForAddressZero();
+                revert LibDiamond__InvalidCalldataLengthForAddressZero();
             }
         } else {
             if (_calldata.length < 1) {
-                revert LibDiamond_InvalidCalldataLengthForNotAddressZero();
+                revert LibDiamond__InvalidCalldataLengthForNotAddressZero();
             }
             if (_init != address(this)) {
                 enforceHasContractCode(_init);
@@ -186,14 +182,14 @@ library LibDiamond {
                 if (error.length > 0) {
                     revert(string(error));
                 } else {
-                    revert LibDiamond_InitFunctionReverted();
+                    revert LibDiamond__InitFunctionReverted();
                 }
             }
         }
     }
 
     function enforceHasContractCode(address _contract) internal view {
-        bytes4 errorSelector = LibDiamond_InvalidExternalContractSize.selector;
+        bytes4 errorSelector = LibDiamond__InvalidExternalContractSize.selector;
         assembly {
             let contractSize := extcodesize(_contract)
             if lt(contractSize, 0x1) {

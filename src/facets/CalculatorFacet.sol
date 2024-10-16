@@ -16,7 +16,7 @@ contract CalculatorFacet is ICalculator {
         if (lcs.initialized) {
             revert CalculatorFacet__FacetAlreadyInitialized();
         }
-        uint256 defaultFeePercentage = 5;
+        uint256 defaultFeePercentage = 500;
 
         lcs.initialized = true;
         lcs.feePercentage = defaultFeePercentage;
@@ -28,7 +28,7 @@ contract CalculatorFacet is ICalculator {
     }
 
     function updateFeePercentage(uint256 newFeePercentage) external override {
-        if (newFeePercentage < 1 && newFeePercentage > 100) {
+        if (newFeePercentage < 1 || newFeePercentage > 10_000) {
             revert CalculatorFacet__InvalidFeePercentage();
         }
         LibCalculator.Storage storage lcs = LibCalculator.getCalculatorStorage();
@@ -36,17 +36,14 @@ contract CalculatorFacet is ICalculator {
         emit FeeUpdated(newFeePercentage);
     }
 
-    function calculateFee(uint256 amount) external view returns (uint256) {
-        if (amount < 100) {
-            // minimal amount
+    function calculateFee(uint256 amount) external pure returns (uint256) {
+        LibCalculator.Storage memory lcs = LibCalculator.getCalculatorStorage();
+        uint256 feePercentage = lcs.feePercentage;
+
+        if (amount == 0 || type(uint256).max / amount < feePercentage || amount * feePercentage < 10_000) {
             revert CalculatorFacet__InvalidAmount();
         }
-        LibCalculator.Storage storage lcs = LibCalculator.getCalculatorStorage();
-        uint256 fee = (amount * lcs.feePercentage) / 100;
+        uint256 fee = (amount * feePercentage) / 10_000; // percentage in basic points
         return fee;
-    }
-
-    function newFunc() external pure returns (uint256) {
-        return 77;
     }
 }

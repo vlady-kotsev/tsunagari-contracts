@@ -22,7 +22,7 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     error TokenManager__InvalidUnlockReceiverAddress();
     error TokenManager__InvalidMinBridgeableAmount();
     error TokenManager__FacetAlreadyInitialized();
-    error TokenManager__TokenAlreadyAdded(address);
+    error TokenManager__TokenAlreadyAdded();
     error TokenManager__TokenNotSupported(address);
     error TokenManager__InvalidTreasuryAddress();
 
@@ -68,19 +68,15 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         uint256 amount,
         address to,
         address wrappedTokenAddress,
-        bytes32 messageHash,
+        bytes memory message,
         bytes[] memory signatures
-    ) external enforceIsSignedByAllMembers(messageHash, signatures) enforceSupportedToken(wrappedTokenAddress) {
+    ) external enforceIsSignedByAllMembers(message, signatures) enforceSupportedToken(wrappedTokenAddress) {
         if (to == address(0)) {
             revert TokenManager__InvalidMintReceiverAddress();
         }
         if (amount == 0) {
             revert TokenManager__InvalidMintAmount();
         }
-        if (wrappedTokenAddress == address(0)) {
-            revert TokenManager__InvalidWrappedTokenAddress();
-        }
-
         IWrappedToken token = IWrappedToken(wrappedTokenAddress);
         token.mint(to, amount);
 
@@ -94,9 +90,6 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         if (amount == 0) {
             revert TokenManager__InvalidBurnAmount();
         }
-        if (wrappedTokenAddress == address(0)) {
-            revert TokenManager__InvalidBurnTokenAddress();
-        }
 
         IWrappedToken token = IWrappedToken(wrappedTokenAddress);
         token.burnFrom(msg.sender, amount);
@@ -108,17 +101,14 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         uint256 amount,
         address to,
         address tokenAddress,
-        bytes32 messageHash,
+        bytes memory message,
         bytes[] memory signatures
-    ) external enforceIsSignedByAllMembers(messageHash, signatures) enforceSupportedToken(tokenAddress) {
+    ) external enforceIsSignedByAllMembers(message, signatures) enforceSupportedToken(tokenAddress) {
         if (amount == 0) {
             revert TokenManager__InvalidUnlockAmount();
         }
         if (to == address(0)) {
             revert TokenManager__InvalidUnlockReceiverAddress();
-        }
-        if (tokenAddress == address(0)) {
-            revert TokenManager__InvalidWrappedTokenAddress();
         }
 
         uint256 calculatedAfterFee = amount - IDiamond(address(this)).calculateFee(amount);
@@ -134,9 +124,9 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         return tms.minBridgeableAmount;
     }
 
-    function setMinimumBridgeableAmount(uint256 amount, bytes32 messageHash, bytes[] memory signatures)
+    function setMinimumBridgeableAmount(uint256 amount, bytes memory message, bytes[] memory signatures)
         external
-        enforceIsSignedByAllMembers(messageHash, signatures)
+        enforceIsSignedByAllMembers(message, signatures)
     {
         if (amount == 0) {
             revert TokenManager__InvalidMinBridgeableAmount();
@@ -147,21 +137,21 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         emit MinBridgeableAmountUpdated(amount);
     }
 
-    function addNewSupportedToken(address tokenAddress, bytes32 messageHash, bytes[] memory signatures)
+    function addNewSupportedToken(address tokenAddress, bytes memory message, bytes[] memory signatures)
         external
-        enforceIsSignedByAllMembers(messageHash, signatures)
+        enforceIsSignedByAllMembers(message, signatures)
     {
         LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
 
         if (tms.supportedTokens[tokenAddress]) {
-            revert TokenManager__TokenAlreadyAdded(tokenAddress);
+            revert TokenManager__TokenAlreadyAdded();
         }
         tms.supportedTokens[tokenAddress] = true;
     }
 
-    function setTreasuryAddress(address treasuryAddress, bytes32 messageHash, bytes[] memory signatures)
+    function setTreasuryAddress(address treasuryAddress, bytes memory message, bytes[] memory signatures)
         external
-        enforceIsSignedByAllMembers(messageHash, signatures)
+        enforceIsSignedByAllMembers(message, signatures)
     {
         if (treasuryAddress == address(0)) {
             revert TokenManager__InvalidTreasuryAddress();
@@ -177,6 +167,20 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         uint256 acumulatedBalance = token.balanceOf(address(this));
         token.safeTransfer(tms.treasuryAddress, acumulatedBalance);
         emit TokenFundsWithdrawnToTreasury(tokenAddress);
+    }
+
+    function isTokenSupported(address tokenAddress) external view returns (bool) {
+        LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
+        return tms.supportedTokens[tokenAddress];
+    }
+
+    function getTreasuryAddress(bytes memory message, bytes[] memory signatures)
+        external
+        enforceIsSignedByAllMembers(message, signatures)
+        returns (address)
+    {
+        LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
+        return tms.treasuryAddress;
     }
 
     modifier enforceSupportedToken(address tokenAddress) {

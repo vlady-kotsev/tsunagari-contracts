@@ -10,74 +10,71 @@ import {GovernanceFacet} from "../src/facets/GovernanceFacet.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
 import {TokenManagerFacet} from "../src/facets/TokenManagerFacet.sol";
 import {WrappedToken} from "../src/WrappedToken.sol";
+import {DiamondLoupeFacet} from "../src/facets/DiamondLoupeFacet.sol";
 
 contract DeployDiamond is Script {
+    struct facetAddressesStruct {
+        address diamondCutFacetAddress;
+        address governanceFacetAddress;
+        address tokenManagerFacetAddress;
+        address diamondLoupeFacetAddress;
+        address calculatorFacetAddress;
+    }
+
     function run() external returns (Diamond) {
-        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](4);
+        return run(true);
+    }
 
-        vm.startBroadcast();
-        DiamondCutFacet diamondCutFacet = new DiamondCutFacet();
-        CalculatorFacet calculatorFacet = new CalculatorFacet();
-        GovernanceFacet governanceFacet = new GovernanceFacet();
-        TokenManagerFacet tokenManagerFacet = new TokenManagerFacet();
-        vm.stopBroadcast();
+    // deployCalculator added for testing purposes
+    function run(bool deployCalculatorFacet) public returns (Diamond) {
+        uint256 cutsCount = deployCalculatorFacet ? 5 : 4;
 
-        console.log("DiamondCutFacet deployed at ", address(diamondCutFacet));
-        console.log("CalculatorFacet deployed at ", address(calculatorFacet));
-        console.log("GovernanceFacet deployed at ", address(governanceFacet));
-        console.log("TokenManagerFacet deployed at ", address(tokenManagerFacet));
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](cutsCount);
+        facetAddressesStruct memory fa = deployFacets(deployCalculatorFacet);
 
         // ## Add facets ##
 
         // Add Diamond Cut facet
-        bytes4[] memory diamondCutFacetSelectors = new bytes4[](1);
-        diamondCutFacetSelectors[0] = DiamondCutFacet.diamondCut.selector;
-
+        bytes4[] memory diamondCutFacetSelectors = getDiamondCutFacetSelectors();
         cuts[0] =
-            IDiamondCut.FacetCut(address(diamondCutFacet), IDiamondCut.FacetCutAction.Add, diamondCutFacetSelectors);
-
-        // Add Calculator facet
-        bytes4[] memory calculatorFacetSelectors = new bytes4[](4);
-        calculatorFacetSelectors[0] = CalculatorFacet.getFeePercentage.selector;
-        calculatorFacetSelectors[1] = CalculatorFacet.updateFeePercentage.selector;
-        calculatorFacetSelectors[2] = CalculatorFacet.calculateFee.selector;
-        calculatorFacetSelectors[3] = CalculatorFacet.initCalculator.selector;
-        cuts[1] =
-            IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
+            IDiamondCut.FacetCut(fa.diamondCutFacetAddress, IDiamondCut.FacetCutAction.Add, diamondCutFacetSelectors);
 
         // Add Governance facet
-        bytes4[] memory governanceFacetSelectors = new bytes4[](4);
-        governanceFacetSelectors[0] = GovernanceFacet.getThreshold.selector;
-        governanceFacetSelectors[1] = GovernanceFacet.setThreshold.selector;
-        governanceFacetSelectors[2] = GovernanceFacet.addMember.selector;
-        governanceFacetSelectors[3] = GovernanceFacet.initGovernance.selector;
-        cuts[2] =
-            IDiamondCut.FacetCut(address(governanceFacet), IDiamondCut.FacetCutAction.Add, governanceFacetSelectors);
+        bytes4[] memory governanceFacetSelectors = getGovernanceFacetSelectors();
+        cuts[1] =
+            IDiamondCut.FacetCut(fa.governanceFacetAddress, IDiamondCut.FacetCutAction.Add, governanceFacetSelectors);
 
         // Add TokenManager facet
-        bytes4[] memory tokenManagerFacetSelectors = new bytes4[](7);
-        tokenManagerFacetSelectors[0] = TokenManagerFacet.lockTokens.selector;
-        tokenManagerFacetSelectors[1] = TokenManagerFacet.unlockTokens.selector;
-        tokenManagerFacetSelectors[2] = TokenManagerFacet.mintWrappedTokens.selector;
-        tokenManagerFacetSelectors[3] = TokenManagerFacet.burnWrappedToken.selector;
-        tokenManagerFacetSelectors[4] = TokenManagerFacet.getMinimumBridgeableAmount.selector;
-        tokenManagerFacetSelectors[5] = TokenManagerFacet.setMinimumBridgeableAmount.selector;
-        tokenManagerFacetSelectors[6] = TokenManagerFacet.initTokenManager.selector;
-        cuts[3] =
-            IDiamondCut.FacetCut(address(tokenManagerFacet), IDiamondCut.FacetCutAction.Add, tokenManagerFacetSelectors);
+        bytes4[] memory tokenManagerFacetSelectors = getTokenManagerFacetSelectors();
+        cuts[2] = IDiamondCut.FacetCut(
+            fa.tokenManagerFacetAddress, IDiamondCut.FacetCutAction.Add, tokenManagerFacetSelectors
+        );
 
+        // Add Diamond Loupe facet
+        bytes4[] memory diamondLoupeFacetSelectors = getDiamondLoupeFacetSelectors();
+        cuts[3] = IDiamondCut.FacetCut(
+            fa.diamondLoupeFacetAddress, IDiamondCut.FacetCutAction.Add, diamondLoupeFacetSelectors
+        );
+
+        if (deployCalculatorFacet) {
+            // Add Calculator facet
+            bytes4[] memory calculatorFacetSelectors = getCalculatorFacetSelectors();
+            cuts[4] = IDiamondCut.FacetCut(
+                fa.calculatorFacetAddress, IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors
+            );
+        }
         vm.startBroadcast();
         Diamond diamond = new Diamond(cuts);
 
         // ## Init facets ##
 
         // Calculator facet
-        IDiamond(address(diamond)).initCalculator();
-
+        if (deployCalculatorFacet) {
+            IDiamond(address(diamond)).initCalculator();
+        }
         // Governance facet
         address[] memory addresses = readAddressesFromFile("./script/addresses.json", ".addresses");
         uint256 threshold = 1;
-
         IDiamond(address(diamond)).initGovernance(addresses, threshold);
 
         // TokenManager facet
@@ -103,5 +100,94 @@ contract DeployDiamond is Script {
     {
         string memory fileData = vm.readFile(filePath);
         return vm.parseJsonAddressArray(fileData, key);
+    }
+
+    function getDiamondCutFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory facetSelectors = new bytes4[](1);
+        facetSelectors[0] = DiamondCutFacet.diamondCut.selector;
+        return facetSelectors;
+    }
+
+    function getGovernanceFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory facetSelectors = new bytes4[](4);
+        facetSelectors[0] = GovernanceFacet.getThreshold.selector;
+        facetSelectors[1] = GovernanceFacet.setThreshold.selector;
+        facetSelectors[2] = GovernanceFacet.addMember.selector;
+        facetSelectors[3] = GovernanceFacet.initGovernance.selector;
+        return facetSelectors;
+    }
+
+    function getTokenManagerFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory facetSelectors = new bytes4[](12);
+        facetSelectors[0] = TokenManagerFacet.lockTokens.selector;
+        facetSelectors[1] = TokenManagerFacet.unlockTokens.selector;
+        facetSelectors[2] = TokenManagerFacet.mintWrappedTokens.selector;
+        facetSelectors[3] = TokenManagerFacet.burnWrappedToken.selector;
+        facetSelectors[4] = TokenManagerFacet.getMinimumBridgeableAmount.selector;
+        facetSelectors[5] = TokenManagerFacet.setMinimumBridgeableAmount.selector;
+        facetSelectors[6] = TokenManagerFacet.initTokenManager.selector;
+        facetSelectors[7] = TokenManagerFacet.addNewSupportedToken.selector;
+        facetSelectors[8] = TokenManagerFacet.withdrawTokenFunds.selector;
+        facetSelectors[9] = TokenManagerFacet.isTokenSupported.selector;
+        facetSelectors[10] = TokenManagerFacet.getTreasuryAddress.selector;
+        facetSelectors[11] = TokenManagerFacet.setTreasuryAddress.selector;
+        return facetSelectors;
+    }
+
+    function getDiamondLoupeFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory facetSelectors = new bytes4[](4);
+        facetSelectors[0] = DiamondLoupeFacet.facets.selector;
+        facetSelectors[1] = DiamondLoupeFacet.facetAddresses.selector;
+        facetSelectors[2] = DiamondLoupeFacet.facetAddress.selector;
+        facetSelectors[3] = DiamondLoupeFacet.facetFunctionSelectors.selector;
+        return facetSelectors;
+    }
+
+    function getCalculatorFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory facetSelectors = new bytes4[](4);
+        facetSelectors[0] = CalculatorFacet.getFeePercentage.selector;
+        facetSelectors[1] = CalculatorFacet.updateFeePercentage.selector;
+        facetSelectors[2] = CalculatorFacet.calculateFee.selector;
+        facetSelectors[3] = CalculatorFacet.initCalculator.selector;
+        return facetSelectors;
+    }
+
+    function deployFacets(bool deployCalculatorFacet) internal returns (facetAddressesStruct memory) {
+        vm.startBroadcast();
+        DiamondCutFacet diamondCutFacet = new DiamondCutFacet();
+        address diamondCutFacetAddress = address(diamondCutFacet);
+
+        address calculatorFacetAddress;
+        if (deployCalculatorFacet) {
+            CalculatorFacet calculatorFacet = new CalculatorFacet();
+            calculatorFacetAddress = address(calculatorFacet);
+        }
+
+        GovernanceFacet governanceFacet = new GovernanceFacet();
+        address governanceFacetAddress = address(governanceFacet);
+
+        TokenManagerFacet tokenManagerFacet = new TokenManagerFacet();
+        address tokenManagerFacetAddress = address(tokenManagerFacet);
+
+        DiamondLoupeFacet diamondLoupeFacet = new DiamondLoupeFacet();
+        address diamondLoupeFacetAddress = address(diamondLoupeFacet);
+
+        vm.stopBroadcast();
+        facetAddressesStruct memory fa = facetAddressesStruct(
+            diamondCutFacetAddress,
+            governanceFacetAddress,
+            tokenManagerFacetAddress,
+            diamondLoupeFacetAddress,
+            calculatorFacetAddress
+        );
+
+        console.log("DiamondCutFacet deployed at ", diamondCutFacetAddress);
+        console.log("GovernanceFacet deployed at ", governanceFacetAddress);
+        console.log("TokenManagerFacet deployed at ", tokenManagerFacetAddress);
+        console.log("DiamondLoupeFacet deployed at ", diamondLoupeFacetAddress);
+        if (deployCalculatorFacet) {
+            console.log("CalculatorFacet deployed at ", calculatorFacetAddress);
+        }
+        return fa;
     }
 }

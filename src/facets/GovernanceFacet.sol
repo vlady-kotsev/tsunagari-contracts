@@ -4,8 +4,9 @@ pragma solidity 0.8.23;
 import {IGovernance} from "../interfaces/IGovernance.sol";
 import {LibGovernance} from "../libs/LibGovernance.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {SignatureChecker} from "../utils/SignatureChecker.sol";
 
-contract GovernanceFacet is IGovernance {
+contract GovernanceFacet is IGovernance, SignatureChecker {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     error GovernanceFacet__InvalidMemberAddress();
@@ -35,9 +36,13 @@ contract GovernanceFacet is IGovernance {
                 i := add(i, 1)
             }
         }
+        gs.initialized = true;
     }
 
-    function addMember(address member) external {
+    function addMember(address member, bytes memory message, bytes[] memory signatures)
+        external
+        enforceIsSignedByAllMembers(message, signatures)
+    {
         if (member == address(0)) {
             revert GovernanceFacet__InvalidMemberAddress();
         }
@@ -52,7 +57,10 @@ contract GovernanceFacet is IGovernance {
         return gs.threshold;
     }
 
-    function setThreshold(uint256 threshold) external {
+    function setThreshold(uint256 threshold, bytes memory message, bytes[] memory signatures)
+        external
+        enforceIsSignedByAllMembers(message, signatures)
+    {
         LibGovernance.Storage storage gs = LibGovernance.getGovernanceStorage();
         if (threshold < 1 || threshold > gs.members.length()) {
             revert GovernanceFacet__InvalidThreshold(threshold);

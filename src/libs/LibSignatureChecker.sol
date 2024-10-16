@@ -14,9 +14,9 @@ library LibSignatureChecker {
 
     error LibSignatureChecker__InvalidSignature();
     error LibSignatureChecker__InvalidSignatureLength();
-    error LibSignatureChecker__InvalidSignatureS();
+    error LibSignatureChecker__InvalidSignatures();
     error LibSignatureChecker__InvalidRecoveredAddress();
-    error LibSignatureChecker__RecoveredAddressNotMember(address);
+    error LibSignatureChecker__RecoveredAddressNotMember();
     error LibSignatureChecker__InvalidSignaturesCount(uint256);
     error LibSignatureChecker__InvalidSignaturesNotUnique();
     error LibSignatureChecker__InvalidMessageHashAlreadyUsed();
@@ -46,44 +46,73 @@ library LibSignatureChecker {
         if (recoverError != ECDSA.RecoverError.NoError) {
             bytes4 invalidSignatureSelector = LibSignatureChecker__InvalidSignature.selector;
             bytes4 invalidSignatureLengthSelector = LibSignatureChecker__InvalidSignatureLength.selector;
-            bytes4 invalidSignatureSSelector = LibSignatureChecker__InvalidSignatureS.selector;
+            bytes4 errorWrapperSelector = 0x08c379a0;
 
             assembly {
-                switch recoverError
-                case 1 { mstore(0x00, invalidSignatureSelector) }
-                case 2 { mstore(0x00, invalidSignatureLengthSelector) }
-                case 3 { mstore(0x00, invalidSignatureSSelector) }
-                revert(0x00, 0x20)
-            }
-        }
+                let ptr := mload(0x40)
+                mstore(ptr, errorWrapperSelector)
+                mstore(add(0x04, ptr), 0x20)
+                mstore(add(0x24, ptr), 0x4)
 
-        if (recoveredAddress == address(0)) {
-            revert LibSignatureChecker__InvalidRecoveredAddress();
+                switch recoverError
+                case 1 { mstore(add(0x44, ptr), invalidSignatureSelector) }
+                case 2 { mstore(add(0x44, ptr), invalidSignatureLengthSelector) }
+
+                mstore(0x40, add(0x48, ptr))
+                revert(ptr, 0x48)
+            }
         }
 
         LibGovernance.Storage storage gs = LibGovernance.getGovernanceStorage();
 
         bool isMember = gs.members.contains(recoveredAddress);
         if (!isMember) {
-            revert LibSignatureChecker__RecoveredAddressNotMember(recoveredAddress);
+            revert LibSignatureChecker__RecoveredAddressNotMember();
         }
     }
 
     function checkSignaturesUniquenessAndCount(bytes[] memory signatures) internal {
         LibGovernance.Storage storage gs = LibGovernance.getGovernanceStorage();
-        if (signatures.length != gs.members.length()) {
+        if (signatures.length != gs.threshold) {
             revert LibSignatureChecker__InvalidSignaturesCount(signatures.length);
         }
         Storage storage sgs = getSignatureCheckerStorage();
-        for (uint256 i = 0; i < signatures.length;) {
+        for (uint256 i = 0; i < gs.threshold;) {
             bool isUnique = sgs.uniqueSet.add(keccak256(signatures[i]));
             if (!isUnique) {
                 revert LibSignatureChecker__InvalidSignaturesNotUnique();
             }
+
             assembly {
                 i := add(1, i)
             }
-            sgs.uniqueSet.remove(keccak256(signatures[i]));
         }
+    }
+
+    function getPrefixedHash(bytes memory rawMessage) internal pure returns (bytes32) {
+        bytes memory prefix = abi.encodePacked("\x19Ethereum Signed Message:\n", uint2str(rawMessage.length));
+
+        bytes memory prefixedMessage = abi.encodePacked(prefix, rawMessage);
+
+        return keccak256(prefixedMessage);
+    }
+
+    function uint2str(uint256 _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len;
+        while (_i != 0) {
+            bstr[--k] = bytes1(uint8(48 + _i % 10));
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }
