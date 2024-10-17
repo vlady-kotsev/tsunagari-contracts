@@ -10,7 +10,7 @@ contract InteractGovernanceFacet is Script {
         address diamondAddress = DevOpsTools.get_most_recent_deployment("Diamond", block.chainid);
         console.log("Latest diamond deployed at: ", diamondAddress);
         IDiamond diamond = IDiamond(diamondAddress);
-        
+
         vm.startBroadcast();
 
         uint256 threshold = diamond.getThreshold();

@@ -12,7 +12,7 @@ import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {GovernanceFacet} from "../src/facets/GovernanceFacet.sol";
 import {DeployGovernanceFacet} from "../script/GovernanceFacet.deploy.s.sol";
 
-contract DiamondTest is Test,Script, SignatureGenerator {
+contract DiamondTest is Test, Script, SignatureGenerator {
     Diamond diamond;
     DiamondCutFacet diamondCutFacet;
 
@@ -25,18 +25,19 @@ contract DiamondTest is Test,Script, SignatureGenerator {
         IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](2);
         bytes4[] memory diamondCutFacetSelectors = new bytes4[](1);
         diamondCutFacetSelectors[0] = DiamondCutFacet.diamondCut.selector;
-        cuts[0] = IDiamondCut.FacetCut(address(diamondCutFacet), IDiamondCut.FacetCutAction.Add, diamondCutFacetSelectors);
+        cuts[0] =
+            IDiamondCut.FacetCut(address(diamondCutFacet), IDiamondCut.FacetCutAction.Add, diamondCutFacetSelectors);
 
-        DeployGovernanceFacet dgf = new DeployGovernanceFacet(); 
+        DeployGovernanceFacet dgf = new DeployGovernanceFacet();
         GovernanceFacet governanceFacet = dgf.run();
-        
 
         bytes4[] memory governanceFacetSelectors = new bytes4[](4);
         governanceFacetSelectors[0] = GovernanceFacet.getThreshold.selector;
         governanceFacetSelectors[1] = GovernanceFacet.setThreshold.selector;
         governanceFacetSelectors[2] = GovernanceFacet.addMember.selector;
         governanceFacetSelectors[3] = GovernanceFacet.initGovernance.selector;
-        cuts[1] = IDiamondCut.FacetCut(address(governanceFacet), IDiamondCut.FacetCutAction.Add, governanceFacetSelectors); 
+        cuts[1] =
+            IDiamondCut.FacetCut(address(governanceFacet), IDiamondCut.FacetCutAction.Add, governanceFacetSelectors);
 
         diamond = new Diamond(cuts);
         IDiamond iDiamond = IDiamond(address(diamond));
@@ -47,9 +48,10 @@ contract DiamondTest is Test,Script, SignatureGenerator {
         initSignatureGenerator(threshold);
 
         messageWithNonce = getUniqueSignature();
-        cuts[0] = IDiamondCut.FacetCut(address(diamondCutFacet), IDiamondCut.FacetCutAction.Remove, diamondCutFacetSelectors);
+        cuts[0] =
+            IDiamondCut.FacetCut(address(diamondCutFacet), IDiamondCut.FacetCutAction.Remove, diamondCutFacetSelectors);
         delete cuts[1];
-        iDiamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
+        iDiamond.diamondCut(cuts, address(0), new bytes(0), messageWithNonce, signatures);
     }
 
     function readAddressesFromFile(string memory filePath, string memory key)

@@ -56,10 +56,6 @@ deploy-diamond-cut-taiko:
 interact-calculator-anvil:
 	@forge script ./script/CalculatorFacet.interact.s.sol --broadcast --rpc-url localhost:8545 --private-key $(PK)   
 
-.PHONY: interact-diamond-cut-anvil 
-interact-diamond-cut-anvil:
-	@forge script ./script/DiamondCut.interact.s.sol --broadcast --rpc-url localhost:8545 --private-key $(PK)   	
-
 .PHONY: interact-governance-anvil
 interact-governance-anvil:
 	@forge script ./script/GovernanceFacet.interact.s.sol --broadcast --rpc-url localhost:8545 --private-key $(PK)
@@ -72,10 +68,6 @@ interact-token-manager-anvil:
 .PHONY: interact-calculator-taiko
 interact-calculator-taiko:
 	@forge script ./script/CalculatorFacet.interact.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK) 
-
-.PHONY: interact-diamond-cut-taiko 
-interact-diamond-cut-taiko:
-	@forge script ./script/DiamondCut.interact.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)   	
 
 .PHONY: interact-governance-taiko
 interact-governance-taiko:
