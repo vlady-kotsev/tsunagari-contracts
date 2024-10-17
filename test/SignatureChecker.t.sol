@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {Diamond} from "../src/Diamond.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";

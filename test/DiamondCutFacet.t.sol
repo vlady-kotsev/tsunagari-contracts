@@ -12,8 +12,9 @@ import {LibDiamond} from "../src/libs/LibDiamond.sol";
 import {MockCalculatorFacet} from "./mocks/MockTokenCalculatorFacet.sol";
 import {DeployMockCalculatorFacet} from "../script/MockCalculatorFacet.deploy.s.sol";
 import {DiamondCutFacet} from "../src/facets/DiamondCutFacet.sol";
+import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 
-contract DiamondCutFacetTest is Test {
+contract DiamondCutFacetTest is Test, SignatureGenerator {
     CalculatorFacet calculatorFacet;
     IDiamond diamond;
 
@@ -25,6 +26,8 @@ contract DiamondCutFacetTest is Test {
         Diamond d = dd.run(false);
 
         diamond = IDiamond(address(d));
+        uint256 threshold = diamond.getThreshold();
+        initSignatureGenerator(threshold);
     }
 
     function testDiamondCutAdd() public {
@@ -42,7 +45,8 @@ contract DiamondCutFacetTest is Test {
         );
         diamond.initCalculator();
 
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
 
         diamond.initCalculator();
         uint256 feePercentage = diamond.getFeePercentage();
@@ -56,8 +60,9 @@ contract DiamondCutFacetTest is Test {
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__InvalidFunctionSelector.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
     }
 
     function testDiamondCutAddInvalidFacetAddress() public {
@@ -67,8 +72,9 @@ contract DiamondCutFacetTest is Test {
         calculatorFacetSelectors[0] = CalculatorFacet.getFeePercentage.selector;
         cuts[0] = IDiamondCut.FacetCut(invalidAddress, IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__InvalidFunctionAddress.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
     }
 
     function testDiamondCutAddFunctionAlreadyAdded() public {
@@ -79,10 +85,12 @@ contract DiamondCutFacetTest is Test {
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
 
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__FunctionAlreadyAdded.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
     }
 
     function testDiamondCutRemove() public {
@@ -94,7 +102,9 @@ contract DiamondCutFacetTest is Test {
         calculatorFacetSelectors[3] = CalculatorFacet.initCalculator.selector;
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
 
         diamond.initCalculator();
         uint256 feePercentage = diamond.getFeePercentage();
@@ -102,7 +112,8 @@ contract DiamondCutFacetTest is Test {
 
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Remove, calculatorFacetSelectors);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
         vm.expectRevert(
             abi.encodeWithSelector(Diamond.Diamond__FacetDoesntExist.selector, CalculatorFacet.initCalculator.selector)
@@ -117,8 +128,9 @@ contract DiamondCutFacetTest is Test {
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Remove, calculatorFacetSelectors);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__InvalidFunctionSelector.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
     }
 
     function testDiamondCutRemoveInvalidFacetAddress() public {
@@ -128,8 +140,9 @@ contract DiamondCutFacetTest is Test {
         calculatorFacetSelectors[0] = CalculatorFacet.getFeePercentage.selector;
         cuts[0] = IDiamondCut.FacetCut(invalidAddress, IDiamondCut.FacetCutAction.Remove, calculatorFacetSelectors);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__FunctionDoesntExist.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
     }
 
     function testDiamondCutRemoveWholeFacet() public {
@@ -138,13 +151,17 @@ contract DiamondCutFacetTest is Test {
         calculatorFacetSelectors[0] = CalculatorFacet.initCalculator.selector;
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
         diamond.initCalculator();
 
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Remove, calculatorFacetSelectors);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
 
         vm.expectRevert(
             abi.encodeWithSelector(Diamond.Diamond__FacetDoesntExist.selector, CalculatorFacet.initCalculator.selector)
@@ -159,12 +176,15 @@ contract DiamondCutFacetTest is Test {
 
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Remove, diamondCutFacetSelectors);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(
             abi.encodeWithSelector(Diamond.Diamond__FacetDoesntExist.selector, DiamondCutFacet.diamondCut.selector)
         );
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
     }
 
     function testDiamondCutRemoveLastFunctionInFacet() public {
@@ -176,7 +196,9 @@ contract DiamondCutFacetTest is Test {
         calculatorFacetSelectors[3] = CalculatorFacet.initCalculator.selector;
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
         diamond.initCalculator();
         uint256 feePercentage = diamond.getFeePercentage();
@@ -188,7 +210,9 @@ contract DiamondCutFacetTest is Test {
         cuts[0] = IDiamondCut.FacetCut(
             address(calculatorFacet), IDiamondCut.FacetCutAction.Remove, calculatorFacetSelectorsOnlyLast
         );
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+
+        messageWithNonce = getUniqueSignature(); 
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
         vm.expectRevert(
             abi.encodeWithSelector(Diamond.Diamond__FacetDoesntExist.selector, CalculatorFacet.initCalculator.selector)
@@ -211,7 +235,8 @@ contract DiamondCutFacetTest is Test {
         );
         diamond.initCalculator();
 
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
         diamond.initCalculator();
         uint256 feePercentage = diamond.getFeePercentage();
@@ -227,7 +252,8 @@ contract DiamondCutFacetTest is Test {
             address(mockCalculatorFacet), IDiamondCut.FacetCutAction.Replace, mockCalculatorFacetSelectors
         );
 
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        messageWithNonce = getUniqueSignature();
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
 
         uint256 expectedMockCalculatorPercentage = 9999;
         uint256 actualMockCalculatorPercentage = diamond.getFeePercentage();
@@ -241,8 +267,9 @@ contract DiamondCutFacetTest is Test {
         cuts[0] =
             IDiamondCut.FacetCut(address(calculatorFacet), IDiamondCut.FacetCutAction.Replace, calculatorFacetSelectors);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__InvalidFunctionSelector.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce, signatures);
     }
 
     function testDiamondCutReplaceInvalidFacetAddress() public {
@@ -252,8 +279,9 @@ contract DiamondCutFacetTest is Test {
         calculatorFacetSelectors[0] = CalculatorFacet.getFeePercentage.selector;
         cuts[0] = IDiamondCut.FacetCut(invalidAddress, IDiamondCut.FacetCutAction.Replace, calculatorFacetSelectors);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__InvalidFunctionAddress.selector);
-        diamond.diamondCut(cuts, address(0), new bytes(0));
+        diamond.diamondCut(cuts, address(0), new bytes(0),messageWithNonce,signatures);
     }
 
     function testInitializeDiamondCutAddressZeroWithCalldata() public {
@@ -299,8 +327,10 @@ contract DiamondCutFacetTest is Test {
             abi.encodeWithSelector(Diamond.Diamond__FacetDoesntExist.selector, CalculatorFacet.initCalculator.selector)
         );
         diamond.initCalculator();
+
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(LibDiamond.LibDiamond__InitFunctionReverted.selector);
-        diamond.diamondCut(cuts, address(calculatorFacet), abi.encodeWithSignature("newFunc()"));
+        diamond.diamondCut(cuts, address(calculatorFacet), abi.encodeWithSignature("newFunc()"),messageWithNonce,signatures);
     }
 
     function testInitializeDiamondCutWithDelegateCallFailureWithError() public {
@@ -312,7 +342,9 @@ contract DiamondCutFacetTest is Test {
 
         cuts[0] = IDiamondCut.FacetCut(address(mock), IDiamondCut.FacetCutAction.Add, calculatorFacetSelectors);
         string memory expectedRevertMessage = "Revert!";
+
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(abi.encodeWithSignature("Error(string)", expectedRevertMessage));
-        diamond.diamondCut(cuts, address(mock), abi.encodeWithSignature("callToRevert()"));
+        diamond.diamondCut(cuts, address(mock), abi.encodeWithSignature("callToRevert()"),messageWithNonce,signatures);
     }
 }

@@ -1,21 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {Script} from "forge-std/Script.sol";
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {TokenManagerFacet} from "../src/facets/TokenManagerFacet.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {MockWrappedToken} from "./mocks/MockWrappedToken.sol";
-import {IDiamond} from "../src/interfaces/IDiamond.sol";
-import {LibTokenManager} from "../src/libs/LibTokenManager.sol";
 import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
 import {Diamond} from "../src/Diamond.sol";
-import {LibSignatureChecker} from "../src/libs/LibSignatureChecker.sol";
 import {DeployTokenManagerFacet} from "../script/TokenManagerFacet.deploy.s.sol";
 import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 
-contract TokenManagerFacetTest is Test, Script, SignatureGenerator {
+contract TokenManagerFacetTest is Test, SignatureGenerator {
     MockERC20 mockToken;
     MockWrappedToken mockWrappedToken;
     IDiamond diamond;

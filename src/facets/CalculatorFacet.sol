@@ -3,8 +3,9 @@ pragma solidity 0.8.23;
 
 import {ICalculator} from "../interfaces/ICalculator.sol";
 import {LibCalculator} from "../libs/LibCalculator.sol";
+import {SignatureChecker} from "../utils/SignatureChecker.sol";
 
-contract CalculatorFacet is ICalculator {
+contract CalculatorFacet is ICalculator, SignatureChecker {
     error CalculatorFacet__FacetAlreadyInitialized();
     error CalculatorFacet__InvalidAmount();
     error CalculatorFacet__InvalidFeePercentage();
@@ -27,7 +28,11 @@ contract CalculatorFacet is ICalculator {
         return lcs.feePercentage;
     }
 
-    function updateFeePercentage(uint256 newFeePercentage) external override {
+    function updateFeePercentage(uint256 newFeePercentage, bytes memory message, bytes[] memory signatures)
+        external
+        override
+        enforceIsSignedByAllMembers(message, signatures)
+    {
         if (newFeePercentage < 1 || newFeePercentage > 10_000) {
             revert CalculatorFacet__InvalidFeePercentage();
         }

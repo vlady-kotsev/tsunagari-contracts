@@ -3,15 +3,24 @@ pragma solidity ^0.8.0;
 
 import {Test} from "forge-std/Test.sol";
 import {CalculatorFacet} from "../src/facets/CalculatorFacet.sol";
-import {LibCalculator} from "../src/libs/LibCalculator.sol";
 import {DeployCalculatorFacet} from "../script/CalculatorFacet.deploy.s.sol";
+import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
+import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
+import {IDiamond} from "../src/interfaces/IDiamond.sol";
+import {Diamond} from "../src/Diamond.sol";
 
-contract CalculatorFacetTest is Test {
+contract CalculatorFacetTest is Test, SignatureGenerator {
     CalculatorFacet calculatorFacet;
+    IDiamond diamond;
 
     function setUp() public {
         DeployCalculatorFacet dcf = new DeployCalculatorFacet();
         calculatorFacet = dcf.run();
+        DeployDiamond dd = new DeployDiamond();
+        Diamond d = dd.run(true);
+        diamond = IDiamond(address(d));
+        uint256 threshold = diamond.getThreshold();
+        initSignatureGenerator(threshold);
     }
 
     function testInitCalculator() public {
@@ -22,26 +31,25 @@ contract CalculatorFacetTest is Test {
         calculatorFacet.initCalculator();
     }
 
-    function testGetFeePercentage() public {
-        calculatorFacet.initCalculator();
-
-        uint256 feePercentage = calculatorFacet.getFeePercentage();
+    function testGetFeePercentage() public view {
+        uint256 feePercentage = diamond.getFeePercentage();
         assertEq(feePercentage, 500);
     }
 
     function testUpdateFeePercentage() public {
-        calculatorFacet.initCalculator();
+        messageWithNonce = getUniqueSignature();
+        diamond.updateFeePercentage(1000, messageWithNonce, signatures);
 
-        calculatorFacet.updateFeePercentage(1000);
-
-        uint256 updatedFee = calculatorFacet.getFeePercentage();
+        uint256 updatedFee = diamond.getFeePercentage();
         assertEq(updatedFee, 1000);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(CalculatorFacet.CalculatorFacet__InvalidFeePercentage.selector);
-        calculatorFacet.updateFeePercentage(10001);
+        diamond.updateFeePercentage(10001, messageWithNonce, signatures);
 
+        messageWithNonce = getUniqueSignature();
         vm.expectRevert(CalculatorFacet.CalculatorFacet__InvalidFeePercentage.selector);
-        calculatorFacet.updateFeePercentage(0);
+        diamond.updateFeePercentage(10001, messageWithNonce, signatures);
     }
 
     function testCalculateFee() public {

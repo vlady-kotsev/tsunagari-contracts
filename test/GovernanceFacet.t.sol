@@ -7,7 +7,6 @@ import {Test} from "forge-std/Test.sol";
 import {GovernanceFacet} from "../src/facets/GovernanceFacet.sol";
 import {DeployGovernanceFacet} from "../script/GovernanceFacet.deploy.s.sol";
 import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
-import {InteractGovernanceFacet} from "../script/GovernanceFacet.interact.s.sol";
 import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {Diamond} from "../src/Diamond.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
