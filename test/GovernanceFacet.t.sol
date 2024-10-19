@@ -10,6 +10,7 @@ import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {Diamond} from "../src/Diamond.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
+import {GovernanceErrors} from "../src/facets/errors/GovernanceErrors.sol";
 
 contract GovernanceFacetTest is Test, SignatureGenerator {
     IDiamond diamond;
@@ -30,12 +31,12 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
     }
 
     function testRevertInitGovernanceInvalidThreshold() public {
-        uint256 invalidThreshold = 4;
+        uint248 invalidThreshold = 4;
 
         DeployGovernanceFacet dgf = new DeployGovernanceFacet();
         GovernanceFacet governanceFacet = dgf.run();
         vm.expectRevert(
-            abi.encodeWithSelector(GovernanceFacet.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
+            abi.encodeWithSelector(GovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
         governanceFacet.initGovernance(members, invalidThreshold);
     }
@@ -46,21 +47,21 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         GovernanceFacet governanceFacet = dgf.run();
         members[0] = invalidMember;
 
-        vm.expectRevert(GovernanceFacet.GovernanceFacet__InvalidMemberAddress.selector);
+        vm.expectRevert(GovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
         governanceFacet.initGovernance(members, 2);
     }
 
     function testRevertOnInvalidThreshold() public {
-        uint256 invalidThreshold = 4;
+        uint248 invalidThreshold = 4;
         messageWithNonce = getUniqueSignature();
         vm.expectRevert(
-            abi.encodeWithSelector(GovernanceFacet.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
+            abi.encodeWithSelector(GovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
         diamond.setThreshold(invalidThreshold, messageWithNonce, signatures);
     }
 
     function testRevertOnFacetAlreadyInitialized() public {
-        vm.expectRevert(GovernanceFacet.GovernanceFacet__FacetAlreadyInitialized.selector);
+        vm.expectRevert(GovernanceErrors.GovernanceFacet__FacetAlreadyInitialized.selector);
         diamond.initGovernance(members, 2);
     }
 
@@ -73,7 +74,7 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         address invalidMember = address(0);
         messageWithNonce = getUniqueSignature();
 
-        vm.expectRevert(GovernanceFacet.GovernanceFacet__InvalidMemberAddress.selector);
+        vm.expectRevert(GovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
         diamond.addMember(invalidMember, messageWithNonce, signatures);
     }
 
@@ -84,10 +85,10 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
     }
 
     function testRevertOnInvalidThresholdOnSet() public {
-        uint256 invalidThreshold = 4;
+        uint248 invalidThreshold = 4;
         messageWithNonce = getUniqueSignature();
         vm.expectRevert(
-            abi.encodeWithSelector(GovernanceFacet.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
+            abi.encodeWithSelector(GovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
         diamond.setThreshold(invalidThreshold, messageWithNonce, signatures);
     }

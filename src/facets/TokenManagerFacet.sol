@@ -7,24 +7,11 @@ import {ITokenManager} from "../interfaces/ITokenManager.sol";
 import {IDiamond} from "../interfaces/IDiamond.sol";
 import {LibTokenManager} from "../libs/LibTokenManager.sol";
 import {SafeERC20} from "@openzeppelincontracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {TokenManagerErrors} from "./errors/TokenManagerErrors.sol";
 
-contract TokenManagerFacet is SignatureChecker, ITokenManager {
+contract TokenManagerFacet is SignatureChecker, ITokenManager, TokenManagerErrors {
     using SafeERC20 for IERC20;
     using SafeERC20 for IWrappedToken;
-
-    error TokenManager__InvalidLockAmount();
-    error TokenManager__InvalidMintAmount();
-    error TokenManager__InvalidWrappedTokenAddress();
-    error TokenManager__InvalidMintReceiverAddress();
-    error TokenManager__InvalidBurnAmount();
-    error TokenManager__InvalidBurnTokenAddress();
-    error TokenManager__InvalidUnlockAmount();
-    error TokenManager__InvalidUnlockReceiverAddress();
-    error TokenManager__InvalidMinBridgeableAmount();
-    error TokenManager__FacetAlreadyInitialized();
-    error TokenManager__TokenAlreadyAdded();
-    error TokenManager__TokenNotSupported(address);
-    error TokenManager__InvalidTreasuryAddress();
 
     event TokensLocked(address indexed user, address indexed tokenAddress, uint256 amount);
     event WrappedTokensMinted(address indexed to, address indexed wrappedTokenAddress, uint256 amount);
@@ -34,7 +21,7 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     event TreasuryAddressUpdated();
     event TokenFundsWithdrawnToTreasury(address);
 
-    function initTokenManager(uint256 minBridgeableAmount, address treasuryAddress) external {
+    function initTokenManager(uint248 minBridgeableAmount, address treasuryAddress) external {
         LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
         if (tms.initialized) {
             revert TokenManager__FacetAlreadyInitialized();
@@ -51,11 +38,11 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         tms.treasuryAddress = treasuryAddress;
     }
 
-    function lockTokens(uint256 amount, address tokenAddress) external enforceSupportedToken(tokenAddress) {
-        if (amount == 0) {
-            revert TokenManager__InvalidLockAmount();
-        }
-
+    function lockTokens(uint256 amount, address tokenAddress)
+        external
+        enforceSupportedToken(tokenAddress)
+        enforceAboveMinBridgeableAmount(amount)
+    {
         IERC20 token = IERC20(tokenAddress);
         token.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -86,11 +73,8 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     function burnWrappedToken(uint256 amount, address wrappedTokenAddress)
         external
         enforceSupportedToken(wrappedTokenAddress)
+        enforceAboveMinBridgeableAmount(amount)
     {
-        if (amount == 0) {
-            revert TokenManager__InvalidBurnAmount();
-        }
-
         IWrappedToken token = IWrappedToken(wrappedTokenAddress);
         token.burnFrom(msg.sender, amount);
 
@@ -124,7 +108,7 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         return tms.minBridgeableAmount;
     }
 
-    function setMinimumBridgeableAmount(uint256 amount, bytes memory message, bytes[] memory signatures)
+    function setMinimumBridgeableAmount(uint248 amount, bytes memory message, bytes[] memory signatures)
         external
         enforceIsSignedByAllMembers(message, signatures)
     {
@@ -187,6 +171,14 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
         if (!tms.supportedTokens[tokenAddress]) {
             revert TokenManager__TokenNotSupported(tokenAddress);
+        }
+        _;
+    }
+
+    modifier enforceAboveMinBridgeableAmount(uint256 amount) {
+        LibTokenManager.Storage storage tms = LibTokenManager.getTokenManagerStorage();
+        if (amount < tms.minBridgeableAmount) {
+            revert TokenManager__InvalidTransferAmount(amount);
         }
         _;
     }

@@ -6,7 +6,7 @@ library LibTokenManager {
 
     struct Storage {
         bool initialized;
-        uint256 minBridgeableAmount;
+        uint248 minBridgeableAmount; // in order to fit in previous storage slot
         mapping(address => bool) supportedTokens;
         address treasuryAddress;
     }

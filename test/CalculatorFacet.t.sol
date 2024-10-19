@@ -8,6 +8,7 @@ import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
 import {Diamond} from "../src/Diamond.sol";
+import {CalculatorErrors} from "../src/facets/errors/CalculatorErrors.sol";
 
 contract CalculatorFacetTest is Test, SignatureGenerator {
     CalculatorFacet calculatorFacet;
@@ -27,7 +28,7 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         calculatorFacet.initCalculator();
 
         assertEq(calculatorFacet.getFeePercentage(), 500);
-        vm.expectRevert(CalculatorFacet.CalculatorFacet__FacetAlreadyInitialized.selector);
+        vm.expectRevert(CalculatorErrors.CalculatorFacet__FacetAlreadyInitialized.selector);
         calculatorFacet.initCalculator();
     }
 
@@ -44,11 +45,11 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         assertEq(updatedFee, 1000);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(CalculatorFacet.CalculatorFacet__InvalidFeePercentage.selector);
+        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
         diamond.updateFeePercentage(10001, messageWithNonce, signatures);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(CalculatorFacet.CalculatorFacet__InvalidFeePercentage.selector);
+        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
         diamond.updateFeePercentage(10001, messageWithNonce, signatures);
     }
 
@@ -60,7 +61,7 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         uint256 fee = calculatorFacet.calculateFee(amount);
         assertEq(fee, expectedFee);
 
-        vm.expectRevert(CalculatorFacet.CalculatorFacet__InvalidAmount.selector);
+        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidAmount.selector);
         calculatorFacet.calculateFee(1);
     }
 }

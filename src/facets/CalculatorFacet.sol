@@ -4,12 +4,9 @@ pragma solidity 0.8.23;
 import {ICalculator} from "../interfaces/ICalculator.sol";
 import {LibCalculator} from "../libs/LibCalculator.sol";
 import {SignatureChecker} from "../utils/SignatureChecker.sol";
+import {CalculatorErrors} from "./errors/CalculatorErrors.sol";
 
-contract CalculatorFacet is ICalculator, SignatureChecker {
-    error CalculatorFacet__FacetAlreadyInitialized();
-    error CalculatorFacet__InvalidAmount();
-    error CalculatorFacet__InvalidFeePercentage();
-
+contract CalculatorFacet is ICalculator, SignatureChecker, CalculatorErrors {
     event FeeUpdated(uint256 newFee);
 
     function initCalculator() external override {
@@ -17,7 +14,7 @@ contract CalculatorFacet is ICalculator, SignatureChecker {
         if (lcs.initialized) {
             revert CalculatorFacet__FacetAlreadyInitialized();
         }
-        uint256 defaultFeePercentage = 500;
+        uint248 defaultFeePercentage = 500;
 
         lcs.initialized = true;
         lcs.feePercentage = defaultFeePercentage;
@@ -28,9 +25,8 @@ contract CalculatorFacet is ICalculator, SignatureChecker {
         return lcs.feePercentage;
     }
 
-    function updateFeePercentage(uint256 newFeePercentage, bytes memory message, bytes[] memory signatures)
+    function updateFeePercentage(uint248 newFeePercentage, bytes memory message, bytes[] memory signatures)
         external
-        override
         enforceIsSignedByAllMembers(message, signatures)
     {
         if (newFeePercentage < 1 || newFeePercentage > 10_000) {

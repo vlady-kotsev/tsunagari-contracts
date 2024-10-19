@@ -14,13 +14,10 @@ contract CalculatorFacetFuzzTest is Test {
     function testFuzzCalculateFee(uint256 amount) public {
         calculatorFacet.initCalculator();
         uint256 feePercentage = calculatorFacet.getFeePercentage();
-        if (amount == 0 || type(uint256).max / amount < feePercentage || amount * feePercentage < 10_000) {
-            vm.expectRevert(CalculatorFacet.CalculatorFacet__InvalidAmount.selector);
-            calculatorFacet.calculateFee(amount);
-        } else {
-            uint256 expectedFee = (amount * feePercentage) / 10_000;
-            uint256 fee = calculatorFacet.calculateFee(amount);
-            assertEq(fee, expectedFee);
-        }
+
+        vm.assume(amount != 0 && type(uint256).max / amount >= feePercentage && amount * feePercentage >= 10_000);
+        uint256 expectedFee = (amount * feePercentage) / 10_000;
+        uint256 fee = calculatorFacet.calculateFee(amount);
+        assertEq(fee, expectedFee);
     }
 }

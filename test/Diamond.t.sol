@@ -43,7 +43,7 @@ contract DiamondTest is Test, Script, SignatureGenerator {
         IDiamond iDiamond = IDiamond(address(diamond));
 
         address[] memory addresses = readAddressesFromFile("./script/addresses.json", ".addresses");
-        uint256 threshold = 1;
+        uint248 threshold = 1;
         iDiamond.initGovernance(addresses, threshold);
         initSignatureGenerator(threshold);
 

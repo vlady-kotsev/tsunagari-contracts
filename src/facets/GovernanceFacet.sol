@@ -5,18 +5,15 @@ import {IGovernance} from "../interfaces/IGovernance.sol";
 import {LibGovernance} from "../libs/LibGovernance.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {SignatureChecker} from "../utils/SignatureChecker.sol";
+import {GovernanceErrors} from "./errors/GovernanceErrors.sol";
 
-contract GovernanceFacet is IGovernance, SignatureChecker {
+contract GovernanceFacet is IGovernance, SignatureChecker, GovernanceErrors {
     using EnumerableSet for EnumerableSet.AddressSet;
-
-    error GovernanceFacet__InvalidMemberAddress();
-    error GovernanceFacet__InvalidThreshold(uint256);
-    error GovernanceFacet__FacetAlreadyInitialized();
 
     event MemberAdded(address);
     event ThresholdUpdated(uint256);
 
-    function initGovernance(address[] memory members, uint256 threshold) external {
+    function initGovernance(address[] memory members, uint248 threshold) external {
         LibGovernance.Storage storage gs = LibGovernance.getGovernanceStorage();
         if (gs.initialized) {
             revert GovernanceFacet__FacetAlreadyInitialized();
@@ -57,7 +54,7 @@ contract GovernanceFacet is IGovernance, SignatureChecker {
         return gs.threshold;
     }
 
-    function setThreshold(uint256 threshold, bytes memory message, bytes[] memory signatures)
+    function setThreshold(uint248 threshold, bytes memory message, bytes[] memory signatures)
         external
         enforceIsSignedByAllMembers(message, signatures)
     {

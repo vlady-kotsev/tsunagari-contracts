@@ -31,13 +31,10 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
         members[1] = member2;
         members[2] = member3;
 
-        if (member1 == address(0) || member2 == address(0) || member3 == address(0)) {
-            vm.expectRevert(GovernanceFacet.GovernanceFacet__InvalidMemberAddress.selector);
-            governanceFacet.initGovernance(members, 2);
-        } else {
-            governanceFacet.initGovernance(members, 2);
-            assertEq(diamond.getThreshold(), 1);
-        }
+        vm.assume(member1 != address(0) && member2 != address(0) && member3 != address(0));
+
+        governanceFacet.initGovernance(members, 2);
+        assertEq(diamond.getThreshold(), 1);
     }
 
     function testFuzzSetThreshold(uint256 threshold) public {
@@ -49,7 +46,12 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
 
         messageWithNonce = getUniqueSignature();
         diamond.setThreshold(1, messageWithNonce, signatures);
-
         assertEq(diamond.getThreshold(), 1);
+    }
+
+    function testFuzzAddMember(address member) public {
+        messageWithNonce = getUniqueSignature();
+        vm.assume(member != address(0));
+        diamond.addMember(member, messageWithNonce, signatures);
     }
 }

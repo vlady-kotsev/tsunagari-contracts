@@ -7,9 +7,9 @@ library LibGovernance {
     bytes32 constant STORAGE_SLOT = keccak256("governance.storage");
 
     struct Storage {
-        bool initialized;
         EnumerableSet.AddressSet members;
-        uint256 threshold;
+        bool initialized;
+        uint248 threshold; // in order to fit in previous storage slot
     }
 
     function getGovernanceStorage() internal pure returns (Storage storage ds) {

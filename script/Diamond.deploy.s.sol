@@ -74,11 +74,11 @@ contract DeployDiamond is Script {
         }
         // Governance facet
         address[] memory addresses = readAddressesFromFile("./script/addresses.json", ".addresses");
-        uint256 threshold = 1;
+        uint248 threshold = 1;
         IDiamond(address(diamond)).initGovernance(addresses, threshold);
 
         // TokenManager facet
-        uint256 minBridgeableAmount = 1e18;
+        uint248 minBridgeableAmount = 1e18;
         address treasuryAddress = makeAddr("treasury");
         IDiamond(address(diamond)).initTokenManager(minBridgeableAmount, treasuryAddress);
 
