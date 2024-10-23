@@ -7,4 +7,9 @@ import {IGovernance} from "./IGovernance.sol";
 import {ITokenManager} from "./ITokenManager.sol";
 import {IDiamondLoupe} from "./IDiamondLoupe.sol";
 
-interface IDiamond is ICalculator, IDiamondCut, IGovernance, ITokenManager, IDiamondLoupe {}
+/// @title IDiamond
+/// @notice Composite interface for the Diamond contract
+/// @dev This interface combines multiple interfaces to define the complete functionality of the Diamond contract
+interface IDiamond is ICalculator, IDiamondCut, IGovernance, ITokenManager, IDiamondLoupe {
+// The IDiamond interface inherits all functions from the imported interfaces
+}

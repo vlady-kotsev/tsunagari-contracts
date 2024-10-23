@@ -10,7 +10,7 @@ import {IDiamond} from "../src/interfaces/IDiamond.sol";
 import {Diamond} from "../src/Diamond.sol";
 import {DeployTokenManagerFacet} from "../script/TokenManagerFacet.deploy.s.sol";
 import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
-import {TokenManagerErrors} from "../src/facets/errors/TokenManagerErrors.sol";
+import {LibTokenManagerErrors} from "../src/facets/errors/LibTokenManagerErrors.sol";
 
 contract TokenManagerFacetTest is Test, SignatureGenerator {
     MockERC20 mockToken;
@@ -37,7 +37,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     }
 
     function testInitTokenManagerAlreadyInitialized() public {
-        vm.expectRevert(TokenManagerErrors.TokenManager__FacetAlreadyInitialized.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__FacetAlreadyInitialized.selector);
         diamond.initTokenManager(10, address(10));
     }
 
@@ -46,7 +46,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         TokenManagerFacet tokenManagerFacet = dtmf.run();
 
         uint248 invalidMinBridgeableAmount = 0;
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidMinBridgeableAmount.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMinBridgeableAmount.selector);
         tokenManagerFacet.initTokenManager(invalidMinBridgeableAmount, address(10));
     }
 
@@ -55,7 +55,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         TokenManagerFacet tokenManagerFacet = dtmf.run();
 
         address invalidTreasuryAddress = address(0);
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidTreasuryAddress.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidTreasuryAddress.selector);
         tokenManagerFacet.initTokenManager(100, invalidTreasuryAddress);
     }
 
@@ -72,7 +72,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         address invalidReceiver = address(0);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidMintReceiverAddress.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMintReceiverAddress.selector);
         diamond.mintWrappedTokens(amount, invalidReceiver, address(mockWrappedToken), messageWithNonce, signatures);
     }
 
@@ -80,7 +80,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 invalidAmount = 0;
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidMintAmount.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMintAmount.selector);
         diamond.mintWrappedTokens(invalidAmount, user, address(mockWrappedToken), messageWithNonce, signatures);
     }
 
@@ -92,7 +92,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
         vm.expectRevert(
             abi.encodeWithSelector(
-                TokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidWrappedTokenAddress
+                LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidWrappedTokenAddress
             )
         );
         diamond.mintWrappedTokens(amount, user, invalidWrappedTokenAddress, messageWithNonce, signatures);
@@ -115,7 +115,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 invalidAmount = 0;
 
         vm.expectRevert(
-            abi.encodeWithSelector(TokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
+            abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
         );
         diamond.burnWrappedToken(invalidAmount, address(mockWrappedToken));
     }
@@ -125,7 +125,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         address invalidTokenAddress = address(0);
 
         vm.expectRevert(
-            abi.encodeWithSelector(TokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
+            abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
         diamond.burnWrappedToken(amount, invalidTokenAddress);
     }
@@ -156,10 +156,10 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     }
 
     function testLockTokensInvalidLockAmount() public {
-        uint256 invalidAmount = 0;
+        uint256 invalidAmount = 100;
 
         vm.expectRevert(
-            abi.encodeWithSelector(TokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
+            abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
         );
         diamond.lockTokens(invalidAmount, address(mockWrappedToken));
     }
@@ -169,7 +169,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         address invalidTokenAddress = address(0);
 
         vm.expectRevert(
-            abi.encodeWithSelector(TokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
+            abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
         diamond.lockTokens(amount, invalidTokenAddress);
     }
@@ -200,7 +200,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 invalidAmount = 0;
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidUnlockAmount.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidUnlockAmount.selector);
         diamond.unlockTokens(invalidAmount, user, address(mockWrappedToken), messageWithNonce, signatures);
     }
 
@@ -209,7 +209,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         address invalidReceiverAddress = address(0);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidUnlockReceiverAddress.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidUnlockReceiverAddress.selector);
         diamond.unlockTokens(amount, invalidReceiverAddress, address(mockWrappedToken), messageWithNonce, signatures);
     }
 
@@ -219,7 +219,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
         messageWithNonce = getUniqueSignature();
         vm.expectRevert(
-            abi.encodeWithSelector(TokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
+            abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
         diamond.unlockTokens(amount, user, invalidTokenAddress, messageWithNonce, signatures);
     }
@@ -239,7 +239,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint248 invalidAmount = 0;
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidMinBridgeableAmount.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMinBridgeableAmount.selector);
         diamond.setMinimumBridgeableAmount(invalidAmount, messageWithNonce, signatures);
     }
 
@@ -267,7 +267,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         assertTrue(isSupported);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__TokenAlreadyAdded.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__TokenAlreadyAdded.selector);
         diamond.addNewSupportedToken(newToken, messageWithNonce, signatures);
     }
 
@@ -285,7 +285,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         address invalidTreasuryAddress = address(0);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(TokenManagerErrors.TokenManager__InvalidTreasuryAddress.selector);
+        vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidTreasuryAddress.selector);
         diamond.setTreasuryAddress(invalidTreasuryAddress, messageWithNonce, signatures);
     }
 
@@ -324,7 +324,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         address invalidTokenAddress = address(0);
 
         vm.expectRevert(
-            abi.encodeWithSelector(TokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
+            abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
         diamond.withdrawTokenFunds(invalidTokenAddress);
     }

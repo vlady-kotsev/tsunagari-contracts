@@ -12,7 +12,7 @@ fs_permissions = [
 remappings = [
     "forge-std/=./lib/forge-std/src/",
     "foundry-devops/=./lib/foundry-devops/src/",
-    "@openzeppelincontracts/contracts/=./lib/openzeppelin-contracts/contracts",
+    "@openzeppelin/contracts/=./lib/openzeppelin-contracts/contracts",
 ]
 [fuzz]
 runs = 1000

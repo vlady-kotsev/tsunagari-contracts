@@ -3,17 +3,31 @@ pragma solidity 0.8.23;
 
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
+/// @title LibDiamond
+/// @notice A library for implementing the core diamond proxy functionality
+/// @dev Implements EIP-2535 Diamond Standard
 library LibDiamond {
+    /// @notice Struct to store function selectors for a facet
+    /// @param functionSelectors Array of function selectors
+    /// @param facetAddressPosition Position of facet address in facetAddresses array
     struct FacetFunctionSelectors {
         bytes4[] functionSelectors;
-        uint16 facetAddressPosition; // position of facetAddress in facetAddresses array
+        uint16 facetAddressPosition;
     }
 
+    /// @notice Struct to store facet address and its position
+    /// @param facetAddress Address of the facet
+    /// @param functionSelectorPosition Position in facetFunctionSelectors.functionSelectors array
     struct FacetAddressAndPosition {
         address facetAddress;
-        uint16 functionSelectorPosition; // position in facetFunctionSelectors.functionSelectors array
+        uint16 functionSelectorPosition;
     }
 
+    /// @notice Main storage struct for the diamond
+    /// @param initialized Whether the diamond is initialized
+    /// @param selectorToFacetAndPosition Mapping of function selectors to their facet addresses and positions
+    /// @param facetFunctionSelectors Mapping of facet addresses to their function selectors
+    /// @param facetAddresses Array of all facet addresses
     struct DiamondStorage {
         bool initialized;
         mapping(bytes4 => FacetAddressAndPosition) selectorToFacetAndPosition;
@@ -21,10 +35,14 @@ library LibDiamond {
         address[] facetAddresses;
     }
 
+    /// @dev Storage slot for diamond storage
     bytes32 constant STORAGE_SLOT = keccak256("diamond.storage");
 
+    /// @notice Emitted when a function is added to the diamond
     event FunctionAdded(bytes4 functionSelector, address functionAddress);
+    /// @notice Emitted when a function is replaced in the diamond
     event FunctionReplaced(bytes4 functionSelector, address functionAddress);
+    /// @notice Emitted when a function is removed from the diamond
     event FunctionRemoved(bytes4 functionSelector);
 
     error LibDiamond__InvalidFunctionSelector();
@@ -36,6 +54,8 @@ library LibDiamond {
     error LibDiamond__InvalidExternalContractSize();
     error LibDiamond__InitFunctionReverted();
 
+    /// @notice Get the diamond storage
+    /// @return ds The DiamondStorage struct
     function getDiamondStorage() internal pure returns (DiamondStorage storage ds) {
         bytes32 position = STORAGE_SLOT;
         assembly {
@@ -43,6 +63,10 @@ library LibDiamond {
         }
     }
 
+    /// @notice Perform a diamond cut
+    /// @param _diamondCut Array of FacetCut structs
+    /// @param _init Address of the contract to execute for initialization
+    /// @param _calldata Calldata for the initialization function
     function diamondCut(IDiamondCut.FacetCut[] memory _diamondCut, address _init, bytes memory _calldata) internal {
         uint256 cutsLength = _diamondCut.length;
         for (uint256 i = 0; i < cutsLength;) {
@@ -54,6 +78,10 @@ library LibDiamond {
         initializeDiamondCut(_init, _calldata);
     }
 
+    /// @notice Perform a batch action on function selectors
+    /// @param functionSelectors Array of function selectors
+    /// @param facetAddress Address of the facet
+    /// @param action FacetCutAction to perform (Add, Remove, or Replace)
     function performBatchAction(
         bytes4[] memory functionSelectors,
         address facetAddress,
@@ -76,6 +104,9 @@ library LibDiamond {
         }
     }
 
+    /// @notice Add a function to the diamond
+    /// @param functionSelector Function selector to add
+    /// @param facetAddress Address of the facet that implements the function
     function addFunction(bytes4 functionSelector, address facetAddress) internal {
         if (functionSelector == bytes4(0)) {
             revert LibDiamond__InvalidFunctionSelector();
@@ -105,6 +136,9 @@ library LibDiamond {
         emit FunctionAdded(functionSelector, facetAddress);
     }
 
+    /// @notice Replace a function in the diamond
+    /// @param functionSelector Function selector to replace
+    /// @param facetAddress New facet address that implements the function
     function replaceFunction(bytes4 functionSelector, address facetAddress) internal {
         if (functionSelector == bytes4(0)) {
             revert LibDiamond__InvalidFunctionSelector();
@@ -118,6 +152,8 @@ library LibDiamond {
         emit FunctionReplaced(functionSelector, facetAddress);
     }
 
+    /// @notice Remove a function from the diamond
+    /// @param functionSelector Function selector to remove
     function removeFunction(bytes4 functionSelector) internal {
         if (functionSelector == bytes4(0)) {
             revert LibDiamond__InvalidFunctionSelector();
@@ -165,6 +201,9 @@ library LibDiamond {
         emit FunctionRemoved(functionSelector);
     }
 
+    /// @notice Initialize the diamond cut
+    /// @param _init Address of the contract to execute for initialization
+    /// @param _calldata Calldata for the initialization function
     function initializeDiamondCut(address _init, bytes memory _calldata) internal {
         if (_init == address(0)) {
             if (_calldata.length != 0) {
@@ -188,6 +227,8 @@ library LibDiamond {
         }
     }
 
+    /// @notice Ensure that a contract has code
+    /// @param _contract Address of the contract to check
     function enforceHasContractCode(address _contract) internal view {
         bytes4 errorSelector = LibDiamond__InvalidExternalContractSize.selector;
         assembly {

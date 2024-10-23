@@ -19,6 +19,6 @@ docs/
 
 .vscode/
 broadcast/
-.notes
-.order
 
+# Certora
+.certora_internal/

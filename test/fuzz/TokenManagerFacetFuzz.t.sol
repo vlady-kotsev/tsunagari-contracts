@@ -24,11 +24,11 @@ contract TokenManagerFacetFuzzTest is Test, SignatureGenerator {
 
         uint256 threshold = diamond.getThreshold();
         initSignatureGenerator(threshold);
-        
+
         //init tokens
         mockERC20 = new MockERC20("Mock Token", "MTK", 18);
         mockWrapped = new MockWrappedToken("Mock Wrapped Token", "MWTK");
-        
+
         // add tokens
         messageWithNonce = getUniqueSignature();
         diamond.addNewSupportedToken(address(mockERC20), messageWithNonce, signatures);

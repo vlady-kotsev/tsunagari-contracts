@@ -1,66 +1,104 @@
-## Foundry
+<div align="center">
+  <h1>Tsunagari/つながり</h1>
+</div>
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Table of Contents
 
-Foundry consists of:
+- [Overview](#overview)
+- [Features](#features)
+- [Facets](#facets)
+- [Deployment](#deployment)
+- [Testing](#testing)
+- [License](#license)
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Overview
 
-## Documentation
+**Tsunagari** (to connect) is a Diamond Standard (EIP-2535) EVM to EVM bridge smart contracts system written in Solidity and Yul, using the Forge framework.
 
-https://book.getfoundry.sh/
+## Features
 
-## Usage
+- Diamond Standard (EIP-2535) modular upgradeability
+- Security by requiring a threshold amount of signatures (n of m)
+- No reliance on a centralized service
 
-### Build
+## Facets
 
-```shell
-$ forge build
+- `DiamondCutFacet`: Manages the facets to be added, replaced, or removed.
+- `DiamondLoupeFacet`: Read-only functions for querying the state of the diamond.
+- `GovernanceFacet`: Manages the governance of the bridge.
+- `CalculatorFacet`: Manages the mathematical calculations for the bridge.
+- `TokenManagerFacet`: Manages the minting, burning, locking and unlocking of tokens.
+
+## Deployment
+
+Deployment to local `anvil` blockchain network:
+
+```bash
+make deploy-diamond-anvil PK=<PRIVATE_KEY>
 ```
 
-### Test
+Deployment to **testnet** blockchain network:
 
-```shell
-$ forge test
+```bash
+make deploy-diamond-taiko PK=<PRIVATE_KEY>
 ```
 
-### Format
+or
 
-```shell
-$ forge fmt
+```bash
+make deploy-diamond-amoy PK=<PRIVATE_KEY>
 ```
 
-### Gas Snapshots
+## Testing
 
-```shell
-$ forge snapshot
+The smart contracts are tested with:
+
+### Unit tests: test coverage report can be generated with:
+
+```bash
+make report
 ```
 
-### Anvil
+### Fuzz tests
 
-```shell
-$ anvil
+### Static code analysis with **Slither**: static analysis report can be generated with:
+
+```bash
+make staic-check
 ```
 
-### Deploy
+<sub>Note: This requires slither analyzer to be installed.</sub>
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+### Formal verification with **Certora**: formal verification for the **Fee calculation functionality** can be run with:
+
+```bash
+make formal-verification CERTORAKEY=<CERTORA_KEY>
 ```
 
-### Cast
+<sub>Note: This requires Certora key.</sub>
 
-```shell
-$ cast <subcommand>
-```
+## License
 
-### Help
+This project is licensed under the MIT License:
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+MIT License
+
+Copyright (c) [year] [fullname]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -13,6 +13,9 @@ import {GovernanceFacet} from "../../src/facets/GovernanceFacet.sol";
 contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
     IDiamond diamond;
     GovernanceFacet governanceFacet;
+    address member1 = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    address member2 = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+    address member3 = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
 
     function setUp() public {
         DeployGovernanceFacet dgf = new DeployGovernanceFacet();
@@ -25,13 +28,13 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
         initSignatureGenerator(threshold);
     }
 
-    function testFuzzInitGovernance(address member1, address member2, address member3) public {
+    function testFuzzInitGovernance(address m1, address m2, address m3) public {
         address[] memory members = new address[](3);
-        members[0] = member1;
-        members[1] = member2;
-        members[2] = member3;
+        members[0] = m1;
+        members[1] = m2;
+        members[2] = m3;
 
-        vm.assume(member1 != address(0) && member2 != address(0) && member3 != address(0));
+        vm.assume(m1 != address(0) && m2 != address(0) && m3 != address(0));
 
         governanceFacet.initGovernance(members, 2);
         assertEq(diamond.getThreshold(), 1);
@@ -52,6 +55,7 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
     function testFuzzAddMember(address member) public {
         messageWithNonce = getUniqueSignature();
         vm.assume(member != address(0));
+        vm.assume(member != member1 && member != member2 && member != member3);
         diamond.addMember(member, messageWithNonce, signatures);
     }
 }

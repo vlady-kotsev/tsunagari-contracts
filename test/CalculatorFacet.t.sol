@@ -8,7 +8,7 @@ import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
 import {Diamond} from "../src/Diamond.sol";
-import {CalculatorErrors} from "../src/facets/errors/CalculatorErrors.sol";
+import {LibCalculatorErrors} from "../src/facets/errors/LibCalculatorErrors.sol";
 
 contract CalculatorFacetTest is Test, SignatureGenerator {
     CalculatorFacet calculatorFacet;
@@ -28,7 +28,7 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         calculatorFacet.initCalculator();
 
         assertEq(calculatorFacet.getFeePercentage(), 500);
-        vm.expectRevert(CalculatorErrors.CalculatorFacet__FacetAlreadyInitialized.selector);
+        vm.expectRevert(LibCalculatorErrors.CalculatorFacet__FacetAlreadyInitialized.selector);
         calculatorFacet.initCalculator();
     }
 
@@ -45,11 +45,11 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         assertEq(updatedFee, 1000);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
+        vm.expectRevert(LibCalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
         diamond.updateFeePercentage(10001, messageWithNonce, signatures);
 
         messageWithNonce = getUniqueSignature();
-        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
+        vm.expectRevert(LibCalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
         diamond.updateFeePercentage(10001, messageWithNonce, signatures);
     }
 
@@ -60,8 +60,21 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         uint256 expectedFee = (amount * 500) / 10_000;
         uint256 fee = calculatorFacet.calculateFee(amount);
         assertEq(fee, expectedFee);
+    }
 
-        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidAmount.selector);
-        calculatorFacet.calculateFee(1);
+    function testCalculateFeeEvent() public {
+        calculatorFacet.initCalculator();
+
+        uint256 amount = 1000;
+        uint256 expectedFee = (amount * 500) / 10_000;
+        vm.expectEmit(true, false, false, false, address(calculatorFacet));
+        emit CalculatorFacet.FeeCalculated(expectedFee);
+        calculatorFacet.calculateFee(amount);
+    }
+
+    function testCalculateFeeReverts() public {
+        uint256 invalidAmount = 1;
+        vm.expectRevert(LibCalculatorErrors.CalculatorFacet__InvalidAmount.selector);
+        calculatorFacet.calculateFee(invalidAmount);
     }
 }

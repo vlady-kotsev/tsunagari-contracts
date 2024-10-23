@@ -10,7 +10,7 @@ import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {Diamond} from "../src/Diamond.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
-import {GovernanceErrors} from "../src/facets/errors/GovernanceErrors.sol";
+import {LibGovernanceErrors} from "../src/facets/errors/LibGovernanceErrors.sol";
 
 contract GovernanceFacetTest is Test, SignatureGenerator {
     IDiamond diamond;
@@ -36,7 +36,7 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         DeployGovernanceFacet dgf = new DeployGovernanceFacet();
         GovernanceFacet governanceFacet = dgf.run();
         vm.expectRevert(
-            abi.encodeWithSelector(GovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
+            abi.encodeWithSelector(LibGovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
         governanceFacet.initGovernance(members, invalidThreshold);
     }
@@ -47,7 +47,16 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         GovernanceFacet governanceFacet = dgf.run();
         members[0] = invalidMember;
 
-        vm.expectRevert(GovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
+        vm.expectRevert(LibGovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
+        governanceFacet.initGovernance(members, 2);
+    }
+
+    function testRevertInitGovernanceMemberAlreadyAdded() public {
+        DeployGovernanceFacet dgf = new DeployGovernanceFacet();
+        GovernanceFacet governanceFacet = dgf.run();
+        members[1] = member1;
+
+        vm.expectRevert(LibGovernanceErrors.GovernanceFacet__MemberAlreadyAdded.selector);
         governanceFacet.initGovernance(members, 2);
     }
 
@@ -55,13 +64,13 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         uint248 invalidThreshold = 4;
         messageWithNonce = getUniqueSignature();
         vm.expectRevert(
-            abi.encodeWithSelector(GovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
+            abi.encodeWithSelector(LibGovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
         diamond.setThreshold(invalidThreshold, messageWithNonce, signatures);
     }
 
     function testRevertOnFacetAlreadyInitialized() public {
-        vm.expectRevert(GovernanceErrors.GovernanceFacet__FacetAlreadyInitialized.selector);
+        vm.expectRevert(LibGovernanceErrors.GovernanceFacet__FacetAlreadyInitialized.selector);
         diamond.initGovernance(members, 2);
     }
 
@@ -70,11 +79,19 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         diamond.addMember(address(0x4), messageWithNonce, signatures);
     }
 
-    function testAddMemberReverts() public {
+    function testAddMemberRevertsInvalidMember() public {
         address invalidMember = address(0);
         messageWithNonce = getUniqueSignature();
 
-        vm.expectRevert(GovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
+        vm.expectRevert(LibGovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
+        diamond.addMember(invalidMember, messageWithNonce, signatures);
+    }
+
+    function testAddMemberRevertsMemberAlreadyAdded() public {
+        address invalidMember = member1;
+        messageWithNonce = getUniqueSignature();
+
+        vm.expectRevert(LibGovernanceErrors.GovernanceFacet__MemberAlreadyAdded.selector);
         diamond.addMember(invalidMember, messageWithNonce, signatures);
     }
 
@@ -88,7 +105,7 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
         uint248 invalidThreshold = 4;
         messageWithNonce = getUniqueSignature();
         vm.expectRevert(
-            abi.encodeWithSelector(GovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
+            abi.encodeWithSelector(LibGovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
         diamond.setThreshold(invalidThreshold, messageWithNonce, signatures);
     }

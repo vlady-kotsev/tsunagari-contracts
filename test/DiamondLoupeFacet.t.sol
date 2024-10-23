@@ -8,7 +8,7 @@ import {Diamond} from "../src/Diamond.sol";
 import {IDiamondLoupe} from "../src/interfaces/IDiamondLoupe.sol";
 import {ICalculator} from "../src/interfaces/ICalculator.sol";
 import {CalculatorFacet} from "../src/facets/CalculatorFacet.sol";
-import {CalculatorErrors} from "../src/facets/errors/CalculatorErrors.sol";
+import {LibCalculatorErrors} from "../src/facets/errors/LibCalculatorErrors.sol";
 
 contract DiamondLoupeTest is Test {
     IDiamond diamond;
@@ -25,7 +25,7 @@ contract DiamondLoupeTest is Test {
         assertEq(facets.length, 5);
         address calculatorFacetAddress = facets[facets.length - 1].facetAddress;
         ICalculator calculator = ICalculator(calculatorFacetAddress);
-        vm.expectRevert(CalculatorErrors.CalculatorFacet__InvalidAmount.selector);
+        vm.expectRevert(LibCalculatorErrors.CalculatorFacet__InvalidAmount.selector);
         calculator.calculateFee(100);
     }
 

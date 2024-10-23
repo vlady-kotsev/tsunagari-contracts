@@ -28,6 +28,10 @@ deploy-diamond-cut-anvil:
 .PHONY: deploy-wrapped-token-anvil
 deploy-wrapped-token-anvil:
 	@forge script script/WrappedToken.deploy.s.sol --rpc-url localhost:8545 --broadcast --private-key $(PK)
+# Amoy
+.PHONY: deploy-diamond-amoy
+deploy-diamond-amoy:
+	@forge script script/Diamond.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology	 --broadcast --private-key $(PK)
 
 # Taiko
 .PHONY: deploy-diamond-taiko
@@ -78,6 +82,14 @@ interact-token-manager-taiko:
 	@forge script ./script/TokenManagerFacet.interact.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)
 
 # Utils
+.PHONY: test
+test:
+	@forge test
+
+.PHONY: build
+build:
+	@forge build
+
 .PHONY: send-eth-diamond-anvil
 send-eth-diamond-anvil:
 	@cast send --value 1000000000000000 --rpc-url localhost:8545 --from $(FROM) $(DIAMOND)  --private-key $(PK) && anvil --unlock $(DIAMOND)
@@ -88,3 +100,11 @@ report:
 	 lcov --remove ./lcov.info -o ./lcov.info.pruned 'script' --rc derive_function_end_line=0 && \
 	 genhtml -o coverage-report lcov.info.pruned --rc derive_function_end_line=0 && \
 	 open coverage-report/index.html  
+
+.PHONY: static-check
+static-check:
+	@slither .
+
+.PHONY: formal-verification
+formal-verification:
+	@export CERTORAKEY=$(CERTORAKEY) && certoraRun ./test/formal-verification/conf/CalculatorFacet.conf
