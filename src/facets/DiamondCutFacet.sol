@@ -7,7 +7,7 @@ import {SignatureChecker} from "../utils/SignatureChecker.sol";
 
 /// @title DiamondCutFacet
 /// @notice Implements diamond cut functionality for upgrading the diamond proxy
-/// @dev This contract is part of a diamond proxy system 
+/// @dev This contract is part of a diamond proxy system
 contract DiamondCutFacet is IDiamondCut, SignatureChecker {
     /// @notice Performs a diamond cut, which updates the diamond's function selectors
     /// @dev This function can only be called if signed by all members

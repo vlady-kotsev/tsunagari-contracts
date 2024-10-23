@@ -12,11 +12,11 @@ contract SignatureGenerator is Test {
     bytes[] signatures;
     /// @dev Message to be signed
     string message;
-    /// @dev Message with nonce 
+    /// @dev Message with nonce
     bytes messageWithNonce;
     /// @dev Private key used for signing (hardcoded for testing)
     uint256 privateKey;
-    /// @dev Nonce for generating unique message hashes 
+    /// @dev Nonce for generating unique message hashes
     uint256 nonce;
 
     /// @notice Initializes the SignatureGenerator with a given threshold

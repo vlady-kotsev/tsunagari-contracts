@@ -10,7 +10,7 @@ library LibCalculator {
 
     /// @dev Structure to hold calculator storage data
     /// @param initialized Flag to check if the calculator is initialized
-    /// @param feePercentage Fee percentage 
+    /// @param feePercentage Fee percentage
     struct Storage {
         bool initialized;
         uint248 feePercentage;
