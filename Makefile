@@ -33,6 +33,10 @@ deploy-wrapped-token-anvil:
 deploy-diamond-amoy:
 	@forge script script/Diamond.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology	 --broadcast --private-key $(PK)
 
+.PHONY: deploy-wrapped-token-amoy
+deploy-wrapped-token-amoy:
+	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
+
 # Taiko
 .PHONY: deploy-diamond-taiko
 deploy-diamond-taiko:
@@ -53,6 +57,10 @@ deploy-token-manager-taiko:
 .PHONY: deploy-diamond-cut-taiko
 deploy-diamond-cut-taiko:
 	@forge script script/DiamondCutFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+
+.PHONY: deploy-wrapped-token-taiko
+deploy-wrapped-token-taiko:
+	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
 
 ### Interaction commands ###
 # Anvil #
@@ -108,3 +116,11 @@ static-check:
 .PHONY: formal-verification
 formal-verification:
 	@export CERTORAKEY=$(CERTORAKEY) && certoraRun ./test/formal-verification/conf/CalculatorFacet.conf
+
+.PHONY: verify-amoy
+verify-amoy:
+	@forge script script/verify.interact.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
+
+.PHONY: verify-taiko
+verify-taiko:
+	@forge script script/verify.interact.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)

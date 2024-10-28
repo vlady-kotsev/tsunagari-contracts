@@ -81,12 +81,8 @@ contract DeployDiamond is Script {
         uint248 minBridgeableAmount = 1e18;
         address treasuryAddress = makeAddr("treasury");
         IDiamond(address(diamond)).initTokenManager(minBridgeableAmount, treasuryAddress);
-
-        // ## Deploy Wrapped token ##
-        WrappedToken wrappedToken = new WrappedToken(address(diamond), "MyToken", "MTK");
         vm.stopBroadcast();
 
-        console.log("Wrapped token deployed at: ", address(wrappedToken));
 
         console.log("Facets initialized");
         console.log("Diamond deployed at ", address(diamond));
