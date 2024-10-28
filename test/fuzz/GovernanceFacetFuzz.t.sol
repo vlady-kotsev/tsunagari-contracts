@@ -15,7 +15,7 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
     GovernanceFacet governanceFacet;
     address member1 = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     address member2 = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-    address member3 = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
+    address member3 = 0x4747b7f5c40599E1C5CF5a72C535D953B64916b6;
 
     function setUp() public {
         DeployGovernanceFacet dgf = new DeployGovernanceFacet();

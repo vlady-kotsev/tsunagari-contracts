@@ -49,14 +49,3 @@ contract VerifyInteract is Script {
         vm.ffi(inputs);
     }
 }
-
-
-/*
-  DiamondCutFacet deployed at  0x3CDa13Fdd442bc3b5e1dd0ddB3b9d849883C8B1C
-  GovernanceFacet deployed at  0x89511F4BD286698179756EaeF5b0f0D31B9bE334
-  TokenManagerFacet deployed at  0xA2FD6EdD69312244Db6Af13837f06a1f6c55345b
-  DiamondLoupeFacet deployed at  0xC1299f38251421CbC41e2A2967b1c6D2CeD1bdfD
-  CalculatorFacet deployed at  0xE450c471219AEFf77157b639181Ec4C81A99AF8E
-  Facets initialized
-  Diamond deployed at  0x1279Bf54e4C1C4fAF15eCBeEbfb1A1A8642a36Cf
-  */
