@@ -16,14 +16,6 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     using SafeERC20 for IERC20;
     using SafeERC20 for IWrappedToken;
 
-    event TokensLocked(address indexed user, address indexed tokenAddress, uint256 amount);
-    event WrappedTokensMinted(address indexed to, address indexed wrappedTokenAddress, uint256 amount);
-    event WrappedTokensBurned(address indexed user, address indexed tokenAddress, uint256 amount);
-    event TokensUnlocked(address indexed user, address indexed tokenAddress, uint256 amount);
-    event MinBridgeableAmountUpdated(uint256 amount);
-    event TreasuryAddressUpdated();
-    event TokenFundsWithdrawnToTreasury(address);
-
     /// @notice Initializes the TokenManager with minimum bridgeable amount and treasury address
     /// @param minBridgeableAmount The minimum amount that can be bridged
     /// @param treasuryAddress The address of the treasury
@@ -47,8 +39,9 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     /// @notice Locks tokens in the contract
     /// @param amount The amount of tokens to lock
     /// @param tokenAddress The address of the token to lock
+    /// @param destinationChainId The destination chain ID
     /// @dev Emits a TokensLocked event
-    function lockTokens(uint256 amount, address tokenAddress)
+    function lockTokens(uint256 amount, address tokenAddress, uint256 destinationChainId)
         external
         enforceSupportedToken(tokenAddress)
         enforceAboveMinBridgeableAmount(amount)
@@ -58,7 +51,7 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
 
         uint256 calculatedAfterFee = amount - IDiamond(address(this)).calculateFee(amount);
 
-        emit TokensLocked(msg.sender, tokenAddress, calculatedAfterFee);
+        emit TokensLocked(msg.sender, tokenAddress, calculatedAfterFee, destinationChainId);
     }
 
     /// @notice Mints wrapped tokens
@@ -90,8 +83,9 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
     /// @notice Burns wrapped tokens
     /// @param amount The amount of wrapped tokens to burn
     /// @param wrappedTokenAddress The address of the wrapped token
+    /// @param destinationChainId The destination chain ID
     /// @dev Emits a WrappedTokensBurned event
-    function burnWrappedToken(uint256 amount, address wrappedTokenAddress)
+    function burnWrappedToken(uint256 amount, address wrappedTokenAddress, uint256 destinationChainId)
         external
         enforceSupportedToken(wrappedTokenAddress)
         enforceAboveMinBridgeableAmount(amount)
@@ -99,7 +93,7 @@ contract TokenManagerFacet is SignatureChecker, ITokenManager {
         IWrappedToken token = IWrappedToken(wrappedTokenAddress);
         token.burnFrom(msg.sender, amount);
 
-        emit WrappedTokensBurned(msg.sender, wrappedTokenAddress, amount);
+        emit WrappedTokensBurned(msg.sender, wrappedTokenAddress, amount, destinationChainId);
     }
 
     /// @notice Unlocks tokens and transfers them to the specified address

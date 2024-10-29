@@ -9,6 +9,7 @@ import {DeployDiamond} from "../script/Diamond.deploy.s.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
 import {Diamond} from "../src/Diamond.sol";
 import {LibCalculatorErrors} from "../src/facets/errors/LibCalculatorErrors.sol";
+import {ICalculator} from "../src/interfaces/ICalculator.sol";
 
 contract CalculatorFacetTest is Test, SignatureGenerator {
     CalculatorFacet calculatorFacet;
@@ -68,7 +69,7 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
         uint256 amount = 1000;
         uint256 expectedFee = (amount * 500) / 10_000;
         vm.expectEmit(true, false, false, false, address(calculatorFacet));
-        emit CalculatorFacet.FeeCalculated(expectedFee);
+        emit ICalculator.FeeCalculated(expectedFee);
         calculatorFacet.calculateFee(amount);
     }
 

@@ -13,14 +13,6 @@ import {LibGovernanceErrors} from "./errors/LibGovernanceErrors.sol";
 contract GovernanceFacet is IGovernance, SignatureChecker {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    /// @notice Emitted when a new member is added to the governance
-    /// @param member The address of the new member
-    event MemberAdded(address member);
-
-    /// @notice Emitted when the governance threshold is updated
-    /// @param threshold The new threshold value
-    event ThresholdUpdated(uint256 threshold);
-
     /// @notice Initializes the governance with a set of members and a threshold
     /// @param members An array of initial member addresses
     /// @param threshold The initial threshold for governance decisions

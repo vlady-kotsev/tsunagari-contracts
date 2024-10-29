@@ -11,13 +11,14 @@ import {Diamond} from "../src/Diamond.sol";
 import {DeployTokenManagerFacet} from "../script/TokenManagerFacet.deploy.s.sol";
 import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 import {LibTokenManagerErrors} from "../src/facets/errors/LibTokenManagerErrors.sol";
+import {ITokenManager} from "../src/interfaces/ITokenManager.sol";
 
 contract TokenManagerFacetTest is Test, SignatureGenerator {
     MockERC20 mockToken;
     MockWrappedToken mockWrappedToken;
     IDiamond diamond;
     address user;
-
+    uint256 destinationChainId;
     function setUp() public {
         DeployDiamond dd = new DeployDiamond();
         Diamond d = dd.run(true);
@@ -34,6 +35,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
         messageWithNonce = getUniqueSignature();
         diamond.addNewSupportedToken(address(mockWrappedToken), messageWithNonce, signatures);
+        destinationChainId = 123;
     }
 
     function testInitTokenManagerAlreadyInitialized() public {
@@ -106,18 +108,18 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         assertEq(mockWrappedToken.balanceOf(user), amount);
 
         vm.prank(user);
-        diamond.burnWrappedToken(amount, address(mockWrappedToken));
+        diamond.burnWrappedToken(amount, address(mockWrappedToken), destinationChainId);
 
         assertEq(mockWrappedToken.balanceOf(address(user)), 0);
     }
 
     function testBurnWrappedTokensInvalidBurnAmount() public {
         uint256 invalidAmount = 0;
-
+       
         vm.expectRevert(
             abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
         );
-        diamond.burnWrappedToken(invalidAmount, address(mockWrappedToken));
+        diamond.burnWrappedToken(invalidAmount, address(mockWrappedToken), destinationChainId);
     }
 
     function testBurnWrappedTokensNotSupportedToken() public {
@@ -127,7 +129,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         vm.expectRevert(
             abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
-        diamond.burnWrappedToken(amount, invalidTokenAddress);
+        diamond.burnWrappedToken(amount, invalidTokenAddress, destinationChainId);
     }
 
     function testLockTokens() public {
@@ -145,10 +147,10 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 amountWithoutFee = lockAmount - fee;
 
         vm.expectEmit(true, true, false, true, address(diamond));
-        emit TokenManagerFacet.TokensLocked(user, address(mockToken), amountWithoutFee);
+        emit ITokenManager.TokensLocked(user, address(mockToken), amountWithoutFee, destinationChainId);
 
         vm.prank(user);
-        diamond.lockTokens(lockAmount, address(mockToken));
+        diamond.lockTokens(lockAmount, address(mockToken), destinationChainId);
 
         assertEq(mockToken.balanceOf(address(diamond)), lockAmount);
 
@@ -161,7 +163,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         vm.expectRevert(
             abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
         );
-        diamond.lockTokens(invalidAmount, address(mockWrappedToken));
+        diamond.lockTokens(invalidAmount, address(mockWrappedToken), destinationChainId);
     }
 
     function testLockTokensNotSupportedToken() public {
@@ -171,7 +173,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         vm.expectRevert(
             abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
-        diamond.lockTokens(amount, invalidTokenAddress);
+        diamond.lockTokens(amount, invalidTokenAddress, destinationChainId);
     }
 
     function testUnlockTokens() public {
@@ -183,7 +185,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         vm.prank(user);
         mockToken.approve(address(diamond), amount);
         vm.prank(user);
-        diamond.lockTokens(amount, address(mockToken));
+        diamond.lockTokens(amount, address(mockToken), destinationChainId);
 
         assertEq(mockToken.balanceOf(user), 0);
 
@@ -229,7 +231,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         messageWithNonce = getUniqueSignature();
 
         vm.expectEmit(true, false, false, false, address(diamond));
-        emit TokenManagerFacet.MinBridgeableAmountUpdated(newAmount);
+        emit ITokenManager.MinBridgeableAmountUpdated(newAmount);
         diamond.setMinimumBridgeableAmount(newAmount, messageWithNonce, signatures);
 
         assertEq(diamond.getMinimumBridgeableAmount(), newAmount);
@@ -299,7 +301,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         mockToken.approve(address(diamond), amount);
 
         vm.prank(user);
-        diamond.lockTokens(amount, address(mockToken));
+        diamond.lockTokens(amount, address(mockToken), destinationChainId);
 
         assertEq(mockToken.balanceOf(user), 0, "User should have 0 tokens");
 

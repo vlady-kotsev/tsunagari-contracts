@@ -9,14 +9,17 @@ import {SignatureGenerator} from "../../src/utils/SignatureGenerator.sol";
 import {MockWrappedToken} from "../mocks/MockWrappedToken.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {TokenManagerFacet} from "../../src/facets/TokenManagerFacet.sol";
+import {ITokenManager} from "../../src/interfaces/ITokenManager.sol";
 
 contract TokenManagerFacetFuzzTest is Test, SignatureGenerator {
     IDiamond diamond;
     address user;
     MockERC20 mockERC20;
     MockWrappedToken mockWrapped;
+    uint256 destinationChainId;
 
     function setUp() public {
+        destinationChainId = 123;
         user = address(123);
         DeployDiamond dd = new DeployDiamond();
         Diamond d = dd.run(true);
@@ -58,7 +61,7 @@ contract TokenManagerFacetFuzzTest is Test, SignatureGenerator {
         assertEq(mockWrapped.balanceOf(user), burnAmount);
 
         vm.prank(user);
-        diamond.burnWrappedToken(burnAmount, address(mockWrapped));
+        diamond.burnWrappedToken(burnAmount, address(mockWrapped), destinationChainId);
 
         assertEq(mockWrapped.balanceOf(address(user)), 0);
     }
@@ -84,10 +87,10 @@ contract TokenManagerFacetFuzzTest is Test, SignatureGenerator {
         uint256 amountWithoutFee = lockAmount - fee;
 
         vm.expectEmit(true, true, false, true, address(diamond));
-        emit TokenManagerFacet.TokensLocked(user, address(mockERC20), amountWithoutFee);
+        emit ITokenManager.TokensLocked(user, address(mockERC20), amountWithoutFee, destinationChainId);
 
         vm.prank(user);
-        diamond.lockTokens(lockAmount, address(mockERC20));
+        diamond.lockTokens(lockAmount, address(mockERC20), destinationChainId);
 
         assertEq(mockERC20.balanceOf(address(diamond)), lockAmount);
 

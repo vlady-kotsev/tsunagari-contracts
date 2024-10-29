@@ -4,17 +4,22 @@ pragma solidity 0.8.23;
 import {Script, console} from "forge-std/Script.sol";
 import {DevOpsTools} from "foundry-devops/DevOpsTools.sol";
 import {IDiamond} from "../src/interfaces/IDiamond.sol";
+import {SignatureGenerator} from "../src/utils/SignatureGenerator.sol";
 
-contract InteractTokenManagerFacet is Script {
+contract InteractTokenManagerFacet is Script, SignatureGenerator {
     function run() external {
+        address newTokenAddress = address(0); // update with desired token address
         address diamondAddress = DevOpsTools.get_most_recent_deployment("Diamond", block.chainid);
-        console.log("Latest diamond deployed at: ", diamondAddress);
+
         IDiamond diamond = IDiamond(diamondAddress);
+        initSignatureGenerator(diamond.getThreshold());
+        // update nonce, to be create random message
+        messageWithNonce = getUniqueSignature();
         vm.startBroadcast();
 
-        uint256 result = diamond.getMinimumBridgeableAmount();
+        diamond.addNewSupportedToken(newTokenAddress, messageWithNonce, signatures);
 
         vm.stopBroadcast();
-        console.log("MinBridgeableAmount: ", result);
+        console.log("New token added successfully");
     }
 }

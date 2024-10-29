@@ -5,6 +5,14 @@ pragma solidity 0.8.23;
 /// @notice Interface for fee calculation operations
 /// @dev This interface defines the core functions for initializing and managing fee calculations
 interface ICalculator {
+    /// @notice Emitted when the fee percentage is updated
+    /// @param newFee The new fee percentage
+    event FeeUpdated(uint256 newFee);
+
+    /// @notice Emitted when the fee is calculated
+    /// @param fee The calculated fee
+    event FeeCalculated(uint256 fee);
+
     /// @notice Initializes the calculator
     /// @dev This function should be called once to set up the initial state of the calculator
     function initCalculator() external;

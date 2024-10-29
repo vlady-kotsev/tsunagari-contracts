@@ -88,6 +88,14 @@ interact-governance-taiko:
 .PHONY: interact-token-manager-taiko
 interact-token-manager-taiko:
 	@forge script ./script/TokenManagerFacet.interact.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)
+# Amoy #
+.PHONY: interact-token-manager-amoy
+interact-token-manager-amoy:
+	@forge script ./script/TokenManagerFacet.interact.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
+
+.PHONY: interact-diamond-amoy
+interact-diamond-amoy:
+	@forge script ./script/Diamond.interact.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
 
 # Utils
 .PHONY: test

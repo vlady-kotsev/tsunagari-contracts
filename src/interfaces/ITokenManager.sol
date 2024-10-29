@@ -5,6 +5,43 @@ pragma solidity 0.8.23;
 /// @notice Interface for managing token operations in a bridge system
 /// @dev This interface defines functions for locking, unlocking, minting, and burning tokens, as well as managing bridge parameters
 interface ITokenManager {
+   /// @notice Emitted when tokens are locked in the contract
+    /// @param user The address of the user who locked the tokens
+    /// @param tokenAddress The address of the token that was locked
+    /// @param amount The amount of tokens that were locked
+    /// @param destinationChainId The ID of the destination chain where the tokens are intended to be used
+    event TokensLocked(address indexed user, address indexed tokenAddress, uint256 amount, uint256 destinationChainId);
+
+    /// @notice Emitted when wrapped tokens are minted
+    /// @param to The address that receives the minted wrapped tokens
+    /// @param wrappedTokenAddress The address of the wrapped token that was minted
+    /// @param amount The amount of wrapped tokens that were minted
+    event WrappedTokensMinted(address indexed to, address indexed wrappedTokenAddress, uint256 amount);
+
+    /// @notice Emitted when wrapped tokens are burned
+    /// @param user The address of the user who burned the wrapped tokens
+    /// @param tokenAddress The address of the wrapped token that was burned
+    /// @param amount The amount of wrapped tokens that were burned
+    /// @param destinationChainId The ID of the destination chain where the original tokens are intended to be unlocked
+    event WrappedTokensBurned(address indexed user, address indexed tokenAddress, uint256 amount, uint256 destinationChainId);
+
+    /// @notice Emitted when tokens are unlocked and transferred to a user
+    /// @param user The address of the user who receives the unlocked tokens
+    /// @param tokenAddress The address of the token that was unlocked
+    /// @param amount The amount of tokens that were unlocked
+    event TokensUnlocked(address indexed user, address indexed tokenAddress, uint256 amount);
+
+    /// @notice Emitted when the minimum bridgeable amount is updated
+    /// @param amount The new minimum bridgeable amount
+    event MinBridgeableAmountUpdated(uint256 amount);
+
+    /// @notice Emitted when the treasury address is updated
+    event TreasuryAddressUpdated();
+
+    /// @notice Emitted when token funds are withdrawn to the treasury
+    /// @param tokenAddress The address of the token that was withdrawn
+    event TokenFundsWithdrawnToTreasury(address tokenAddress);
+
     /// @notice Initializes the token manager with minimum bridgeable amount and treasury address
     /// @param minBridgeableAmount The minimum amount of tokens that can be bridged
     /// @param treasuryAddress The address of the treasury
@@ -13,7 +50,8 @@ interface ITokenManager {
     /// @notice Locks tokens in the contract
     /// @param amount The amount of tokens to lock
     /// @param tokenAddress The address of the token to lock
-    function lockTokens(uint256 amount, address tokenAddress) external;
+    /// @param destinationChainId The ID of the destination chain
+    function lockTokens(uint256 amount, address tokenAddress, uint256 destinationChainId) external;
 
     /// @notice Unlocks tokens and transfers them to a specified address
     /// @param amount The amount of tokens to unlock
@@ -46,7 +84,8 @@ interface ITokenManager {
     /// @notice Burns wrapped tokens
     /// @param amount The amount of wrapped tokens to burn
     /// @param tokenAddress The address of the wrapped token to burn
-    function burnWrappedToken(uint256 amount, address tokenAddress) external;
+    /// @param destinationChainId The ID of the destination chain
+    function burnWrappedToken(uint256 amount, address tokenAddress, uint256 destinationChainId) external;
 
     /// @notice Retrieves the minimum bridgeable amount
     /// @return The minimum amount of tokens that can be bridged
