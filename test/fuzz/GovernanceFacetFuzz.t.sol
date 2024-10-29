@@ -36,7 +36,7 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
 
         vm.assume(m1 != address(0) && m2 != address(0) && m3 != address(0));
         vm.assume(m1 != m2 && m1 != m3 && m2 != m3);
-        
+
         governanceFacet.initGovernance(members, 2);
         assertEq(diamond.getThreshold(), 1);
     }
