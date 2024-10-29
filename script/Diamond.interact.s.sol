@@ -10,7 +10,7 @@ import {IDiamond} from "../src/interfaces/IDiamond.sol";
 contract InteractDiamond is Script {
     function run() external {
         address diamondAddress = DevOpsTools.get_most_recent_deployment("Diamond", block.chainid);
-        address nativeTokensAddress = address(0); // update with desired token address 
+        address nativeTokensAddress = address(0); // update with desired token address
 
         IDiamond diamond = IDiamond(diamondAddress);
         vm.startBroadcast();

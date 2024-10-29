@@ -83,7 +83,6 @@ contract DeployDiamond is Script {
         IDiamond(address(diamond)).initTokenManager(minBridgeableAmount, treasuryAddress);
         vm.stopBroadcast();
 
-
         console.log("Facets initialized");
         console.log("Diamond deployed at ", address(diamond));
         return diamond;

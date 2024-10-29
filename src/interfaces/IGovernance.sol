@@ -12,7 +12,7 @@ interface IGovernance {
     /// @notice Emitted when the governance threshold is updated
     /// @param threshold The new threshold value
     event ThresholdUpdated(uint256 threshold);
-    
+
     /// @notice Initializes the governance with a set of members and a threshold
     /// @param members An array of addresses representing the initial governance members
     /// @param threshold The initial threshold for governance decisions

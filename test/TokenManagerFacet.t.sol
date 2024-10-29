@@ -19,6 +19,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     IDiamond diamond;
     address user;
     uint256 destinationChainId;
+
     function setUp() public {
         DeployDiamond dd = new DeployDiamond();
         Diamond d = dd.run(true);
@@ -115,7 +116,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
     function testBurnWrappedTokensInvalidBurnAmount() public {
         uint256 invalidAmount = 0;
-       
+
         vm.expectRevert(
             abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__InvalidTransferAmount.selector, invalidAmount)
         );

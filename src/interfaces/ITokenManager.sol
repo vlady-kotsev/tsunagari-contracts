@@ -5,7 +5,7 @@ pragma solidity 0.8.23;
 /// @notice Interface for managing token operations in a bridge system
 /// @dev This interface defines functions for locking, unlocking, minting, and burning tokens, as well as managing bridge parameters
 interface ITokenManager {
-   /// @notice Emitted when tokens are locked in the contract
+    /// @notice Emitted when tokens are locked in the contract
     /// @param user The address of the user who locked the tokens
     /// @param tokenAddress The address of the token that was locked
     /// @param amount The amount of tokens that were locked
@@ -23,7 +23,9 @@ interface ITokenManager {
     /// @param tokenAddress The address of the wrapped token that was burned
     /// @param amount The amount of wrapped tokens that were burned
     /// @param destinationChainId The ID of the destination chain where the original tokens are intended to be unlocked
-    event WrappedTokensBurned(address indexed user, address indexed tokenAddress, uint256 amount, uint256 destinationChainId);
+    event WrappedTokensBurned(
+        address indexed user, address indexed tokenAddress, uint256 amount, uint256 destinationChainId
+    );
 
     /// @notice Emitted when tokens are unlocked and transferred to a user
     /// @param user The address of the user who receives the unlocked tokens

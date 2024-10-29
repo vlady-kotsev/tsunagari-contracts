@@ -10,7 +10,6 @@ import {LibCalculatorErrors} from "./errors/LibCalculatorErrors.sol";
 /// @notice This contract implements fee calculation and management functionality
 /// @dev This contract is part of a diamond proxy system and inherits from SignatureChecker
 contract CalculatorFacet is ICalculator, SignatureChecker {
-
     /// @notice Initializes the calculator facet
     /// @dev Can only be called once
     /// @inheritdoc ICalculator
