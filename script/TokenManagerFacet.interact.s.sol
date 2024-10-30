@@ -14,7 +14,7 @@ contract InteractTokenManagerFacet is Script, SignatureGenerator {
         IDiamond diamond = IDiamond(diamondAddress);
         initSignatureGenerator(diamond.getThreshold());
         // update nonce, to be create random message
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.startBroadcast();
 
         diamond.addNewSupportedToken(newTokenAddress, messageWithNonce, signatures);

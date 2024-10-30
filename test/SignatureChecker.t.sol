@@ -20,7 +20,7 @@ contract SignatureCheckerTest is Test, SignatureGenerator {
     }
 
     function testInvalidMessageHashAlreadyUsed() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(address(1), messageWithNonce, signatures);
 
         vm.expectRevert(LibSignatureChecker.LibSignatureChecker__InvalidMessageHashAlreadyUsed.selector);
@@ -28,7 +28,7 @@ contract SignatureCheckerTest is Test, SignatureGenerator {
     }
 
     function testInvalidSignatureLength() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         signatures[0] = hex"0123";
 
         vm.expectRevert(LibSignatureChecker.LibSignatureChecker__InvalidSignatureLength.selector);
@@ -36,7 +36,7 @@ contract SignatureCheckerTest is Test, SignatureGenerator {
     }
 
     function testInvalidSignatureCount() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         signatures = new bytes[](0);
 
         vm.expectRevert(
@@ -46,10 +46,10 @@ contract SignatureCheckerTest is Test, SignatureGenerator {
     }
 
     function testSingaturesNotUnique() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.setThreshold(2, messageWithNonce, signatures);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         bytes memory signature = signatures[0];
         signatures = new bytes[](2);
         signatures[0] = signature;
@@ -60,7 +60,7 @@ contract SignatureCheckerTest is Test, SignatureGenerator {
     }
 
     function testRecoveredAddressNotMember() public {
-        getUniqueSignature();
+        getUniqueSignature(1);
 
         vm.expectRevert(LibSignatureChecker.LibSignatureChecker__RecoveredAddressNotMember.selector);
         diamond.addNewSupportedToken(address(1), hex"00", signatures);
@@ -71,5 +71,14 @@ contract SignatureCheckerTest is Test, SignatureGenerator {
         string memory expected = "0";
 
         assertEq(expected, actual);
+    }
+
+    function testSignatureCheckerWorksWithMultpleSignatures() public {
+        messageWithNonce = getUniqueSignature(1);
+        diamond.setThreshold(2, messageWithNonce, signatures);
+        initSignatureGenerator(2);
+        nonce++;
+        messageWithNonce = getUniqueSignature(2);
+        diamond.setThreshold(1, messageWithNonce, signatures);
     }
 }

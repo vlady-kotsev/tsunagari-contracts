@@ -47,7 +47,7 @@ contract DiamondTest is Test, Script, SignatureGenerator {
         iDiamond.initGovernance(addresses, threshold);
         initSignatureGenerator(threshold);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         cuts[0] =
             IDiamondCut.FacetCut(address(diamondCutFacet), IDiamondCut.FacetCutAction.Remove, diamondCutFacetSelectors);
         delete cuts[1];

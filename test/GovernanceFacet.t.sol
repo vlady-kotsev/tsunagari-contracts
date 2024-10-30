@@ -62,7 +62,7 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
 
     function testRevertOnInvalidThreshold() public {
         uint248 invalidThreshold = 4;
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(
             abi.encodeWithSelector(LibGovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );
@@ -75,13 +75,13 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
     }
 
     function testAddMember() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addMember(address(0x4), messageWithNonce, signatures);
     }
 
     function testAddMemberRevertsInvalidMember() public {
         address invalidMember = address(0);
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
 
         vm.expectRevert(LibGovernanceErrors.GovernanceFacet__InvalidMemberAddress.selector);
         diamond.addMember(invalidMember, messageWithNonce, signatures);
@@ -89,21 +89,21 @@ contract GovernanceFacetTest is Test, SignatureGenerator {
 
     function testAddMemberRevertsMemberAlreadyAdded() public {
         address invalidMember = member1;
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
 
         vm.expectRevert(LibGovernanceErrors.GovernanceFacet__MemberAlreadyAdded.selector);
         diamond.addMember(invalidMember, messageWithNonce, signatures);
     }
 
     function testSetThreshold() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.setThreshold(1, messageWithNonce, signatures);
         assertEq(diamond.getThreshold(), 1);
     }
 
     function testRevertOnInvalidThresholdOnSet() public {
         uint248 invalidThreshold = 4;
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(
             abi.encodeWithSelector(LibGovernanceErrors.GovernanceFacet__InvalidThreshold.selector, invalidThreshold)
         );

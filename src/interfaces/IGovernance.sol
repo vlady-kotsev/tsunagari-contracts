@@ -29,8 +29,8 @@ interface IGovernance {
     function setThreshold(uint248 threshold, bytes memory message, bytes[] memory signatures) external;
 
     /// @notice Adds a new member to the governance
-    /// @param owner The address of the new member to be added
+    /// @param member The address of the new member to be added
     /// @param message The message that was signed by the governance members
     /// @param signatures An array of signatures from the governance members
-    function addMember(address owner, bytes memory message, bytes[] memory signatures) external;
+    function addMember(address member, bytes memory message, bytes[] memory signatures) external;
 }

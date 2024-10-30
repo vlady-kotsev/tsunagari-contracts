@@ -31,10 +31,10 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         mockToken = new MockERC20("Mock Token", "MTK", 18);
         mockWrappedToken = new MockWrappedToken("Mock Wrapped Token", "MWTK");
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(address(mockToken), messageWithNonce, signatures);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(address(mockWrappedToken), messageWithNonce, signatures);
         destinationChainId = 123;
     }
@@ -65,7 +65,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     function testMintWrappedTokens() public {
         uint256 amount = 50;
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.mintWrappedTokens(amount, user, address(mockWrappedToken), messageWithNonce, signatures);
         assertEq(mockWrappedToken.balanceOf(user), amount);
     }
@@ -74,7 +74,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 amount = 50;
         address invalidReceiver = address(0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMintReceiverAddress.selector);
         diamond.mintWrappedTokens(amount, invalidReceiver, address(mockWrappedToken), messageWithNonce, signatures);
     }
@@ -82,7 +82,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     function testMintWrappedTokensInvalidMintAmount() public {
         uint256 invalidAmount = 0;
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMintAmount.selector);
         diamond.mintWrappedTokens(invalidAmount, user, address(mockWrappedToken), messageWithNonce, signatures);
     }
@@ -91,7 +91,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 amount = 50;
         address invalidWrappedTokenAddress = address(0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
 
         vm.expectRevert(
             abi.encodeWithSelector(
@@ -104,7 +104,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     function testBurnWrappedTokens() public {
         uint256 amount = diamond.getMinimumBridgeableAmount();
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.mintWrappedTokens(amount, user, address(mockWrappedToken), messageWithNonce, signatures);
         assertEq(mockWrappedToken.balanceOf(user), amount);
 
@@ -190,7 +190,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
         assertEq(mockToken.balanceOf(user), 0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.unlockTokens(amount, user, address(mockToken), messageWithNonce, signatures);
 
         uint256 fee = diamond.calculateFee(amount);
@@ -202,7 +202,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     function testUnlockTokensInvalidAmount() public {
         uint256 invalidAmount = 0;
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidUnlockAmount.selector);
         diamond.unlockTokens(invalidAmount, user, address(mockWrappedToken), messageWithNonce, signatures);
     }
@@ -211,7 +211,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 amount = 50;
         address invalidReceiverAddress = address(0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidUnlockReceiverAddress.selector);
         diamond.unlockTokens(amount, invalidReceiverAddress, address(mockWrappedToken), messageWithNonce, signatures);
     }
@@ -220,7 +220,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         uint256 amount = 50;
         address invalidTokenAddress = address(0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(
             abi.encodeWithSelector(LibTokenManagerErrors.TokenManager__TokenNotSupported.selector, invalidTokenAddress)
         );
@@ -229,7 +229,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
     function testSetMinimumBridgeableAmount() public {
         uint248 newAmount = 200;
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
 
         vm.expectEmit(true, false, false, false, address(diamond));
         emit ITokenManager.MinBridgeableAmountUpdated(newAmount);
@@ -241,7 +241,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     function testSetMinimumBridgeableAmountInvalidMinBridgeableAmount() public {
         uint248 invalidAmount = 0;
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidMinBridgeableAmount.selector);
         diamond.setMinimumBridgeableAmount(invalidAmount, messageWithNonce, signatures);
     }
@@ -251,7 +251,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         bool isSupported = diamond.isTokenSupported(newToken);
         assertFalse(isSupported);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(newToken, messageWithNonce, signatures);
 
         isSupported = diamond.isTokenSupported(newToken);
@@ -263,13 +263,13 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
         bool isSupported = diamond.isTokenSupported(newToken);
         assertFalse(isSupported);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(newToken, messageWithNonce, signatures);
 
         isSupported = diamond.isTokenSupported(newToken);
         assertTrue(isSupported);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__TokenAlreadyAdded.selector);
         diamond.addNewSupportedToken(newToken, messageWithNonce, signatures);
     }
@@ -277,17 +277,17 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
     function testSetTreasuryAddress() public {
         address newTreasury = address(0x4);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.setTreasuryAddress(newTreasury, messageWithNonce, signatures);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         assertEq(diamond.getTreasuryAddress(messageWithNonce, signatures), newTreasury);
     }
 
     function testSetTreasuryAddressInvalidAddress() public {
         address invalidTreasuryAddress = address(0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibTokenManagerErrors.TokenManager__InvalidTreasuryAddress.selector);
         diamond.setTreasuryAddress(invalidTreasuryAddress, messageWithNonce, signatures);
     }
@@ -306,7 +306,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
         assertEq(mockToken.balanceOf(user), 0, "User should have 0 tokens");
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.unlockTokens(amount, user, address(mockToken), messageWithNonce, signatures);
 
         uint256 fee = diamond.calculateFee(amount);
@@ -319,7 +319,7 @@ contract TokenManagerFacetTest is Test, SignatureGenerator {
 
         assertEq(mockToken.balanceOf(address(diamond)), 0);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         assertEq(mockToken.balanceOf(diamond.getTreasuryAddress(messageWithNonce, signatures)), fee);
     }
 

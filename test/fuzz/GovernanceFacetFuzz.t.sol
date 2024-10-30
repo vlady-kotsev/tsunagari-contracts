@@ -48,13 +48,13 @@ contract GovernanceFacetFuzzTest is Test, SignatureGenerator {
             members[i] = address(uint160(i + 1));
         }
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.setThreshold(1, messageWithNonce, signatures);
         assertEq(diamond.getThreshold(), 1);
     }
 
     function testFuzzAddMember(address member) public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.assume(member != address(0));
         vm.assume(member != member1 && member != member2 && member != member3);
         diamond.addMember(member, messageWithNonce, signatures);

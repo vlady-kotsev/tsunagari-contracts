@@ -39,17 +39,17 @@ contract CalculatorFacetTest is Test, SignatureGenerator {
     }
 
     function testUpdateFeePercentage() public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.updateFeePercentage(1000, messageWithNonce, signatures);
 
         uint256 updatedFee = diamond.getFeePercentage();
         assertEq(updatedFee, 1000);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibCalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
         diamond.updateFeePercentage(10001, messageWithNonce, signatures);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.expectRevert(LibCalculatorErrors.CalculatorFacet__InvalidFeePercentage.selector);
         diamond.updateFeePercentage(10001, messageWithNonce, signatures);
     }

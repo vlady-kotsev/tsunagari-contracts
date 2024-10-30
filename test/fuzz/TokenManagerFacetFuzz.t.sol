@@ -33,22 +33,22 @@ contract TokenManagerFacetFuzzTest is Test, SignatureGenerator {
         mockWrapped = new MockWrappedToken("Mock Wrapped Token", "MWTK");
 
         // add tokens
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(address(mockERC20), messageWithNonce, signatures);
 
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.addNewSupportedToken(address(mockWrapped), messageWithNonce, signatures);
     }
 
     function testFuzzSetTokenManagerMinBridgeableAmount(uint248 minBridgeableAmount) public {
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         vm.assume(minBridgeableAmount != 0);
         diamond.setMinimumBridgeableAmount(minBridgeableAmount, messageWithNonce, signatures);
     }
 
     function testFuzzMintWrappedTokens(uint256 mintAmount) public {
         vm.assume(mintAmount != 0);
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.mintWrappedTokens(mintAmount, user, address(mockWrapped), bytes(messageWithNonce), signatures);
         assertEq(mockWrapped.balanceOf(user), mintAmount);
     }
@@ -56,7 +56,7 @@ contract TokenManagerFacetFuzzTest is Test, SignatureGenerator {
     function testFuzzBurnWrappedTokens(uint256 burnAmount) public {
         uint256 minAmount = diamond.getMinimumBridgeableAmount();
         vm.assume(burnAmount > minAmount);
-        messageWithNonce = getUniqueSignature();
+        messageWithNonce = getUniqueSignature(1);
         diamond.mintWrappedTokens(burnAmount, user, address(mockWrapped), messageWithNonce, signatures);
         assertEq(mockWrapped.balanceOf(user), burnAmount);
 
