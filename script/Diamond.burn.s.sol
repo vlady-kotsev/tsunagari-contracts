@@ -10,13 +10,13 @@ import {IDiamond} from "../src/interfaces/IDiamond.sol";
 contract InteractDiamond is Script {
     function run() external {
         address diamondAddress = DevOpsTools.get_most_recent_deployment("Diamond", block.chainid);
-        address nativeTokensAddress = address(0); // update with desired token address
+        address wrappedTokensAddress = address(0); // update with desired token address
 
         IDiamond diamond = IDiamond(diamondAddress);
         vm.startBroadcast();
 
-        diamond.lockTokens(1000000000000000000, nativeTokensAddress, block.chainid);
-        console.log("Tokens locked!");
+        diamond.burnWrappedToken(1000000000000000000, wrappedTokensAddress, 80002);
+        console.log("Tokens burned!");
 
         vm.stopBroadcast();
     }

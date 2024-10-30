@@ -92,7 +92,7 @@ library LibSignatureChecker {
     /// @dev Reverts if the number of signatures doesn't match the threshold or if signatures are not unique
     function checkSignaturesUniquenessAndCount(bytes[] memory signatures) internal {
         LibGovernance.Storage storage gs = LibGovernance.getGovernanceStorage();
-        if (signatures.length != gs.threshold) {
+        if (signatures.length < gs.threshold) {
             revert LibSignatureChecker__InvalidSignaturesCount(signatures.length);
         }
         Storage storage sgs = getSignatureCheckerStorage();

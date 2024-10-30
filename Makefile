@@ -37,6 +37,10 @@ deploy-diamond-amoy:
 deploy-wrapped-token-amoy:
 	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
 
+.PHONY: deploy-token-amoy
+deploy-token-amoy:
+	@forge script script/Token.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
+
 # Taiko
 .PHONY: deploy-diamond-taiko
 deploy-diamond-taiko:
@@ -61,6 +65,10 @@ deploy-diamond-cut-taiko:
 .PHONY: deploy-wrapped-token-taiko
 deploy-wrapped-token-taiko:
 	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+
+.PHONY: deploy-token-taiko
+deploy-token-taiko:
+	@forge script script/Token.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
 
 ### Interaction commands ###
 # Anvil #
@@ -88,14 +96,23 @@ interact-governance-taiko:
 .PHONY: interact-token-manager-taiko
 interact-token-manager-taiko:
 	@forge script ./script/TokenManagerFacet.interact.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)
+
+.PHONY: burn-diamond-taiko
+burn-diamond-taiko:
+	@forge script ./script/Diamond.burn.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)
+
 # Amoy #
 .PHONY: interact-token-manager-amoy
 interact-token-manager-amoy:
-	@forge script ./script/TokenManagerFacet.interact.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
+	@forge script ./script/TokenManagerFacet.burn.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
 
-.PHONY: interact-diamond-amoy
-interact-diamond-amoy:
-	@forge script ./script/Diamond.interact.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
+.PHONY: interact-governance-amoy
+interact-governance-amoy:
+	@forge script ./script/GovernanceFacet.interact.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
+
+.PHONY: lock-diamond-amoy
+lock-diamond-amoy:
+	@forge script ./script/Diamond.lock.s.sol --broadcast --rpc-url https://rpc-amoy.polygon.technology --private-key $(PK)
 
 # Utils
 .PHONY: test
@@ -113,7 +130,7 @@ send-eth-diamond-anvil:
 .PHONY: report
 report:
 	@forge coverage --report lcov && \
-	 lcov --remove ./lcov.info -o ./lcov.info.pruned 'script' --rc derive_function_end_line=0 && \
+	 lcov --remove ./lcov.info -o ./lcov.info.pruned 'script' 'mocks' --rc derive_function_end_line=0 && \
 	 genhtml -o coverage-report lcov.info.pruned --rc derive_function_end_line=0 && \
 	 open coverage-report/index.html  
 
