@@ -1,6 +1,7 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/8e4e3361-4930-45ef-addc-a0b576e8c56f" alt="logo" />
-  <h1>Tsunagari/つながり</h1>
+  <h1>Tsunagari/つながり - contracts</h1>
+  
 </div>
 
 ## Table of Contents
@@ -14,7 +15,7 @@
 
 ## Overview
 
-**Tsunagari** (to connect) is a Diamond Standard (EIP-2535) EVM to EVM bridge smart contracts system written in Solidity and Yul, using the Forge framework.
+**Tsunagari**(to connect) contracts is a Diamond Standard (EIP-2535) EVM to EVM bridge smart contracts system written in Solidity and Yul, using the Forge framework.
 
 ## Features
 

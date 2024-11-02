@@ -101,6 +101,10 @@ interact-token-manager-taiko:
 burn-diamond-taiko:
 	@forge script ./script/Diamond.burn.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)
 
+.PHONY: lock-diamond-taiko
+lock-diamond-taiko:
+	@forge script ./script/Diamond.lock.s.sol --broadcast --rpc-url https://rpc.hekla.taiko.xyz --private-key $(PK)
+
 # Amoy #
 .PHONY: interact-token-manager-amoy
 interact-token-manager-amoy:
