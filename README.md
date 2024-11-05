@@ -48,19 +48,7 @@ make deploy-diamond-taiko PK=<PRIVATE_KEY>
 or
 
 ```bash
-make deploy-diamond-amoy PK=<PRIVATE_KEY>
-```
-
-Verify facets:
-
-```bash
-make verify-amoy PK=<PRIVATE_KEY>
-```
-
-or
-
-```bash
-make verify-taiko PK=<PRIVATE_KEY>
+make deploy-diamond-base PK=<PRIVATE_KEY>
 ```
 
 ## Testing

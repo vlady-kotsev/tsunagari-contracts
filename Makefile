@@ -31,28 +31,28 @@ deploy-wrapped-token-anvil:
 # Amoy
 .PHONY: deploy-diamond-amoy
 deploy-diamond-amoy:
-	@forge script script/Diamond.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology	 --broadcast --private-key $(PK)
+	@forge script script/Diamond.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology	 --broadcast --verify --private-key $(PK)
 
 .PHONY: deploy-wrapped-token-amoy
 deploy-wrapped-token-amoy:
-	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
+	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --verify --private-key $(PK)
 
 .PHONY: deploy-token-amoy
 deploy-token-amoy:
-	@forge script script/Token.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
+	@forge script script/Token.deploy.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --verify --private-key $(PK)
 
 # Taiko
 .PHONY: deploy-diamond-taiko
 deploy-diamond-taiko:
-	@forge script script/Diamond.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz	 --broadcast --private-key $(PK)	
+	@forge script script/Diamond.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz	 --broadcast --verify --private-key $(PK)	
 
 .PHONY: deploy-calculator-taiko
 deploy-calculator-taiko:
-	@forge script script/CalculatorFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+	@forge script script/CalculatorFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --verify --private-key $(PK)
 
 .PHONY: deploy-governance-taiko
 deploy-governance-taiko:
-	@forge script script/GovernanceFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+	@forge script script/GovernanceFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --verify --private-key $(PK)
 
 .PHONY: deploy-token-manager-taiko 
 deploy-token-manager-taiko:
@@ -60,15 +60,15 @@ deploy-token-manager-taiko:
 
 .PHONY: deploy-diamond-cut-taiko
 deploy-diamond-cut-taiko:
-	@forge script script/DiamondCutFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+	@forge script script/DiamondCutFacet.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --verify --private-key $(PK)
 
 .PHONY: deploy-wrapped-token-taiko
 deploy-wrapped-token-taiko:
-	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --verify --private-key $(PK)
 
 .PHONY: deploy-token-taiko
 deploy-token-taiko:
-	@forge script script/Token.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+	@forge script script/Token.deploy.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --verify --private-key $(PK)
 
 ### Interaction commands ###
 # Anvil #
@@ -146,10 +146,23 @@ static-check:
 formal-verification:
 	@export CERTORAKEY=$(CERTORAKEY) && certoraRun ./test/formal-verification/conf/CalculatorFacet.conf
 
-.PHONY: verify-amoy
-verify-amoy:
-	@forge script script/verify.interact.s.sol --rpc-url https://rpc-amoy.polygon.technology --broadcast --private-key $(PK)
+# Base
+.PHONY: deploy-diamond-base
+deploy-diamond-base:
+	@forge script script/Diamond.deploy.s.sol --rpc-url https://base-sepolia.infura.io/v3/ --broadcast --verify --private-key $(PK)
 
-.PHONY: verify-taiko
-verify-taiko:
-	@forge script script/verify.interact.s.sol --rpc-url https://rpc.hekla.taiko.xyz --broadcast --private-key $(PK)
+.PHONY: deploy-token-base
+deploy-token-base:
+	@forge script script/Token.deploy.s.sol --rpc-url https://base-sepolia.infura.io/v3/ --broadcast --verify --private-key $(PK)
+
+.PHONY: deploy-wrapped-token-base
+deploy-wrapped-token-base:
+	@forge script script/WrappedToken.deploy.s.sol --rpc-url https://base-sepolia.infura.io/v3/ --broadcast --verify --private-key $(PK)
+
+.PHONY: interact-token-manager-base
+interact-token-manager-base:
+	@forge script script/TokenManagerFacet.interact.s.sol --rpc-url https://base-sepolia.infura.io/v3/ --broadcast --private-key $(PK)
+
+.PHONY: interact-governance-base
+interact-governance-base:
+	@forge script script/GovernanceFacet.interact.s.sol --rpc-url https://base-sepolia.infura.io/v3/ --broadcast --private-key $(PK)
